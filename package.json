@@ -1,0 +1,12 @@
+{
+    "name": "RinconCanino",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "install-all": "cd Backend && npm install && cd ../Frontend && npm install",
+        "start": "concurrently \"cd Backend && npm start\" \"cd Frontend && npm run dev\""
+    },
+    "devDependencies": {
+        "concurrently": "^7.6.0"
+    }
+}

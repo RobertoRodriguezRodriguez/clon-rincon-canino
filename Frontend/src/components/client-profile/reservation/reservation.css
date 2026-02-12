@@ -1,0 +1,8 @@
+
+.rs-btn-primary {
+  background-color: #3498ff !important;
+  background-color: var(--rs-btn-primary-bg);
+  border: none;
+  color: #fff;
+  color: var(--rs-btn-primary-text);
+}

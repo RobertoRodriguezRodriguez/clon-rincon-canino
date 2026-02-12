@@ -1,6 +1,6 @@
 import { getDay } from "date-fns";
 
-const url = import.meta.env.VITE_API_URL;
+const url = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 // Obtener todas las estancias
 export const getStayAll = async () => {

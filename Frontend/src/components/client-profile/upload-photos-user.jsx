@@ -14,8 +14,8 @@ export default function UploadPetPhoto({ petId, onUploadSuccess }) {
     }
 
     const fd = new FormData();
-    fd.append("file", lastFile);
     fd.append("id_pet", petId);
+    fd.append("file", lastFile);
 
     uploadPhoto(fd)
       .then(() => {

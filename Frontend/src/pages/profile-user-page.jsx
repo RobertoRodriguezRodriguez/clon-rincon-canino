@@ -59,14 +59,11 @@ export default function ProfileUserPage() {
           dni={user.dni}
           phone={user.telefono}
         />
-        <hr className="h-px my-8 bg-gray-200 border-2 shadow-2xl"></hr>
-        {pet?.id_cliente === user.id ? (
+        {pet?.id_cliente === user.id && (
           <>
             <PetInfo pet={pet} />
           </>
-        ) : (
-          <BookForm id_cliente={user.id} />
-        )}
+        ) }
         <hr className="h-px mb-8 bg-gray-200 border-2 shadow-2xl"></hr>
         {pet?.id ? (
           <>

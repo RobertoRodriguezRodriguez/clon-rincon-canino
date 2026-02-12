@@ -9,17 +9,23 @@ import * as fs from "fs";
 
 const router = express.Router();
 
+// Asegurarse de que la carpeta uploads exista
+const uploadDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
 // 1) Configuración de Multer para guardar archivos en /uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Carpeta local donde se guardarán los archivos
-    cb(null, "uploads");
+    // Usar la ruta absoluta para evitar problemas con el directorio de trabajo actual
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // Generar un nombre único: timestamp + nombre original
-    // o podrías usar uuid para el nombre
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
+    // Generar un nombre de archivo único para evitar colisiones y problemas con caracteres especiales
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const extension = path.extname(file.originalname);
+    cb(null, file.fieldname + "-" + uniqueSuffix + extension);
   },
 });
 
@@ -46,29 +52,37 @@ router.post("/", upload.single("file"), async (req, res) => {
     }
 
     const idPet = req.body.id_pet;
-    const filePath = req.file.path;
+    // Construir una ruta relativa para la URL que se guardará en la base de datos
+    const urlPath = `uploads/${req.file.filename}`;
 
     // Buscar si ya existe una foto para la mascota
     const existingPhoto = await Photos.findOne({ where: { id_pet: idPet } });
 
     if (existingPhoto) {
-      // Eliminar la foto anterior del sistema de archivos
-      if (fs.existsSync(existingPhoto.contenido)) {
-        fs.unlinkSync(existingPhoto.contenido);
+      // Para eliminar el archivo antiguo, reconstruimos su ruta absoluta en el sistema de archivos
+      const oldFilePath = path.join(process.cwd(), existingPhoto.contenido);
+      try {
+        fs.unlinkSync(oldFilePath);
+        console.log("Archivo antiguo eliminado:", oldFilePath);
+      } catch (err) {
+        // Si el error es que el archivo no existe (ENOENT), lo ignoramos,
+        // porque nuestro objetivo era eliminarlo de todos modos.
+        if (err.code !== 'ENOENT') {
+          console.error("Error al eliminar el archivo antiguo:", err);
+        }
       }
 
-      // Actualizar el registro existente con la nueva foto
-      existingPhoto.contenido = filePath;
+      // Actualizar el registro existente con la nueva ruta de la foto
+      existingPhoto.contenido = urlPath;
       await existingPhoto.save();
       console.log("Foto actualizada en BD:", existingPhoto.toJSON());
       return res.json(existingPhoto);
     }
 
-    // Si no hay foto previa, crear un nuevo registro
     const newId = uuidv4();
     const newPhoto = await Photos.create({
       id: newId,
-      contenido: filePath,
+      contenido: urlPath,
       id_pet: idPet,
     });
 
@@ -76,6 +90,10 @@ router.post("/", upload.single("file"), async (req, res) => {
     res.json(newPhoto);
   } catch (error) {
     console.error("Error al procesar la solicitud:", error);
+    // Si ocurre un error después de que el archivo se haya subido, lo eliminamos para no dejar basura.
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
     res.status(500).json({ error: error.message });
   }
 });
@@ -133,8 +151,14 @@ router.delete("/:id", async (req, res) => {
     if (!photo) {
       return res.status(404).json({ error: "Foto no encontrada." });
     }
-    if (fs.existsSync(photo.contenido)) {
-      fs.unlinkSync(photo.contenido);
+    const filePath = path.join(process.cwd(), photo.contenido);
+    try {
+      fs.unlinkSync(filePath);
+      console.log("Archivo eliminado del sistema de archivos:", filePath);
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        console.error("Error al eliminar el archivo del sistema de archivos:", err);
+      }
     }
     await photo.destroy();
     res.json({ message: "Foto eliminada correctamente." });

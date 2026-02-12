@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-const url = import.meta.env.VITE_API_URL;
+const url = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 export async function getClient(navigate) {
   try {
@@ -8,6 +8,7 @@ export async function getClient(navigate) {
 
     if (!token) {
       navigate("/login");
+      return;
     }
 
     const response = await fetch(`${url}/client`, {

@@ -25,9 +25,11 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+
     if (email === "nazaretlinaresferre198@gmail.com") {
       try {
-        const token = await fetch(`${import.meta.env.VITE_API_URL}/admin`, {
+        const token = await fetch(`${apiUrl}/admin`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -53,13 +55,13 @@ export default function LoginPage() {
         return;
       } catch (error) {
         toaster.push(
-          <Notification type="error" header={"Error: " + errorMessage} />,
+          <Notification type="error" header={"Error: " + error.message} />,
           { placement: "topEnd" }
         );
       }
     }
     try {
-      const token = await fetch(`${import.meta.env.VITE_API_URL}/client`, {
+      const token = await fetch(`${apiUrl}/client`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,7 +86,7 @@ export default function LoginPage() {
       navigate("/profile-user");
     } catch (error) {
       toaster.push(
-        <Notification type="error" header={"Error: " + errorMessage} />,
+        <Notification type="error" header={"Error: " + error.message} />,
         { placement: "topEnd" }
       );
     }
@@ -158,6 +160,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 className="flex w-full justify-center rounded-md bg-sky-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                onClick={handleSubmit}
               >
                 INICIAR
               </button>

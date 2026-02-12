@@ -91,7 +91,7 @@ export default function PhotosPage() {
           <p>No hay fotos disponibles</p>  // Mensaje si no hay fotos
         ) : (
           photos.map((photo) => {
-            const rutaImagen = photo.contenido.replace("\\", "/");
+            const rutaImagen = photo.contenido.replace(/\\/g, "/");
             console.log(rutaImagen);
 
             return (

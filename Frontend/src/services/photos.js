@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const url = import.meta.env.VITE_API_URL;
+const url = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 // Obtener todas las fotos
 export const getPhotos = async () => {

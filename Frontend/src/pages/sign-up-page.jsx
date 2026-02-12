@@ -49,6 +49,8 @@ export default function SignUpPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+
     try {
       if (password.value !== repeatPassword.value) {
         toaster.push(
@@ -58,7 +60,7 @@ export default function SignUpPage() {
         throw new Error("Contraseñas no coinciden");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/client`, {
+      const response = await fetch(`${apiUrl}/client`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -73,12 +75,30 @@ export default function SignUpPage() {
       });
 
       if (response.ok) {
-        navigate("/login");
+        // Intentar iniciar sesión automáticamente para obtener el token
+        const loginResponse = await fetch(`${apiUrl}/client`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.value,
+            password: password.value,
+          }),
+        });
+
+        if (loginResponse.ok) {
+          const tokenJSON = await loginResponse.json();
+          sessionStorage.setItem("token", tokenJSON.token);
+          navigate("/profile-user");
+        } else {
+          navigate("/login");
+        }
       } else {
         throw new Error(`Error: ${response.statusText}`);
       }
     } catch (error) {
-      toaster.push(<Notification type="error" header={error} />, {
+      toaster.push(<Notification type="error" header={error.message} />, {
         placement: "topEnd",
       });
     }
@@ -385,6 +405,7 @@ export default function SignUpPage() {
 
           <div>
             <button
+              onClick={handleSubmit}
               type="submit"
               className="lex w-full justify-center rounded-md bg-sky-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >

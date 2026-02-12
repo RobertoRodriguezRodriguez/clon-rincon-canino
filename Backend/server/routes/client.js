@@ -56,7 +56,7 @@ const verificarToken = (req, res, next) => {
       return res.status(403).json({ mensaje: "Token inválido" });
     }
 
-    req.body.usuario = usuario;
+    req.usuario = usuario;
     next();
   });
 
@@ -64,28 +64,33 @@ const verificarToken = (req, res, next) => {
 };
 
 // Ruta para obtener el perfil de un usuario
-router.get("/", verificarToken, (req, res) => {
-  const { usuario } = req.body;
+router.get("/", verificarToken, async (req, res) => {
+  try {
+    const usuario = req.usuario; // { id: '...', email: '...' } del token
 
-  Client.findOne({
-    where: {
-      id: usuario.id,
-    },
-  }).then((client) => {
-    Admin.findOne({
-      where: {
-        email: usuario.email,
-      },
-    }).then((admin) => {
-      if (admin !== null) {
-        logger.info(`Perfil de ${admin.email} obtenido - Admin`);
-        res.json(admin.dataValues);
-      } else {
-        logger.info(`Perfil de ${client.email} obtenido - No admin`);
-        res.json(client.dataValues);
-      }
-    });
-  });
+    // Busca el cliente y el admin en paralelo para más eficiencia
+    const clientPromise = Client.findOne({ where: { id: usuario.id } });
+    const adminPromise = Admin.findOne({ where: { email: usuario.email } });
+
+    const [client, admin] = await Promise.all([clientPromise, adminPromise]);
+
+    if (admin) {
+      logger.info(`Perfil de ${admin.email} obtenido - Admin`);
+      return res.json(admin.dataValues);
+    }
+
+    if (client) {
+      logger.info(`Perfil de ${client.email} obtenido - No admin`);
+      return res.json(client.dataValues);
+    }
+
+    // Si no se encuentra ni como admin ni como cliente
+    logger.error("Usuario del token no encontrado en la BBDD:", usuario);
+    return res.status(404).json({ error: "Usuario no encontrado" });
+  } catch (error) {
+    logger.error("Error en la ruta GET /client:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
 });
 
 // Crear usuario
@@ -115,7 +120,7 @@ router.put("/", async (req, res) => {
       dni: dni,
       email: email,
       password: sha1(password),
-      activo: false,
+      activo: true,
     });
 
     // Log de éxito

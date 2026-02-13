@@ -110,7 +110,6 @@ export default function NavbarAdmin() {
                 Fotos
               </Link>
             </li>
-            {token && token.id === "1" && (
             <li>
               <Link
                 to="/calendar"
@@ -119,7 +118,6 @@ export default function NavbarAdmin() {
                 Calendario
               </Link>
             </li>
-              )}
           </ul>
         </div>
       </div>

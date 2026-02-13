@@ -55,30 +55,6 @@ router.post("/", upload.single("file"), async (req, res) => {
     // Construir una ruta relativa para la URL que se guardará en la base de datos
     const urlPath = `uploads/${req.file.filename}`;
 
-    // Buscar si ya existe una foto para la mascota
-    const existingPhoto = await Photos.findOne({ where: { id_pet: idPet } });
-
-    if (existingPhoto) {
-      // Para eliminar el archivo antiguo, reconstruimos su ruta absoluta en el sistema de archivos
-      const oldFilePath = path.join(process.cwd(), existingPhoto.contenido);
-      try {
-        fs.unlinkSync(oldFilePath);
-        console.log("Archivo antiguo eliminado:", oldFilePath);
-      } catch (err) {
-        // Si el error es que el archivo no existe (ENOENT), lo ignoramos,
-        // porque nuestro objetivo era eliminarlo de todos modos.
-        if (err.code !== 'ENOENT') {
-          console.error("Error al eliminar el archivo antiguo:", err);
-        }
-      }
-
-      // Actualizar el registro existente con la nueva ruta de la foto
-      existingPhoto.contenido = urlPath;
-      await existingPhoto.save();
-      console.log("Foto actualizada en BD:", existingPhoto.toJSON());
-      return res.json(existingPhoto);
-    }
-
     const newId = uuidv4();
     const newPhoto = await Photos.create({
       id: newId,
@@ -132,14 +108,14 @@ router.get("/:id", async (req, res) => {
 // Obtener la foto de un pet por su ID
 router.get("/pet/:id", async (req, res) => {
   try {
-    const photo = await Photos.findOne({where: { id_pet: req.params.id}});
-    console.log("FOTO back:", photo)
-    if (!photo) {
-      return res.status(404).json({ error: "Foto no encontrada." });
+    const photos = await Photos.findAll({where: { id_pet: req.params.id}});
+    console.log("FOTOS back:", photos)
+    if (!photos || photos.length === 0) {
+      return res.status(404).json({ error: "Fotos no encontradas." });
     }
-    res.json(photo);
+    res.json(photos);
   } catch (error) {
-    console.error("Error al obtener la foto:", error);
+    console.error("Error al obtener las fotos:", error);
     res.status(500).json({ error: error.message });
   }
 })

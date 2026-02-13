@@ -3,7 +3,7 @@
 
 export const updatePassword = async (email, newPassword) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/admin`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3001/api"}/admin`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

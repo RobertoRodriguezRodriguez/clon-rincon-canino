@@ -113,12 +113,14 @@ export default function Reservations() {
   };
 
   const handleSave = async () => {
+    const isEditing = !!editingReservation;
     if (
       !newReservation.id_clase ||
       !newReservation.id_cliente ||
-      !newReservation.fecha ||
-      !newReservation.hora_inicio ||
-      !newReservation.hora_fin
+      (isEditing &&
+        (!newReservation.fecha ||
+          !newReservation.hora_inicio ||
+          !newReservation.hora_fin))
     ) {
       toaster.push(
         <Notification type="error" header="Faltan datos en la reserva" />,
@@ -317,7 +319,7 @@ export default function Reservations() {
                 <SelectPicker
                   data={classes.map((classItem) => ({
                     label: `${classItem.fecha} ${classItem.hora_inicio}`, // Combinación de la fecha y hora para mostrar
-                    value: classItem.id_clase, // ID único de la clase
+                    value: classItem.id || classItem.id_clase, // ID único de la clase
                   }))}
                   value={newReservation.id_clase} // ID de la clase seleccionada
                   onChange={(value) =>

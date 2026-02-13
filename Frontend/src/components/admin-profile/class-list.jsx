@@ -6,7 +6,7 @@ import {
   Form,
   Input,
   useToaster,
-  Notification,
+  Notification
 } from "rsuite";
 import { useState, useEffect } from "react";
 import { deleteClass, updateClass } from "../../services/class";
@@ -229,6 +229,7 @@ export default function ClassList() {
                   onChange={(value) =>
                     setCurrentClass({ ...currentClass, cupo: value })
                   }
+                  disabled={currentClass.cupo == 1}
                 />
               </Form.Group>
             </Form>

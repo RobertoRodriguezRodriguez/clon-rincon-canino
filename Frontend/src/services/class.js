@@ -1,5 +1,4 @@
-const url = import.meta.env.VITE_API_URL;
-import { useToaster, Notification } from 'rsuite';
+const url = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 
 // Ordena las reservas por fecha en orden ascendente

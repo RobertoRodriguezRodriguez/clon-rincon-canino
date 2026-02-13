@@ -10,7 +10,6 @@ import GroupReservations from "../components/admin-profile/group-reservations";
 import StayMaker from "../components/admin-profile/stay-maker";
 import StayClientsReservations from "../components/admin-profile/stay-reservations";
 
-import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 
 import { getClient } from "../services/client";

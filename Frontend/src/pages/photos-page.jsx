@@ -69,10 +69,10 @@ export default function PhotosPage() {
               }
             })
             .then((data) => {
-              if (data) {
-                setPhotos([data]);  // Solo se espera una foto, por eso la envuelvo en un array
+              if (data && data.length > 0) {
+                setPhotos(data); // Ahora el backend devuelve un array de fotos
                 setNoPhotos(false);
-                console.log("Foto obtenida:", data);
+                console.log("Fotos obtenidas:", data);
               }
             })
             .catch((error) => {

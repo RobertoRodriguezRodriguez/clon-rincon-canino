@@ -1,4 +1,5 @@
 import Navbar from "../components/navbar";
+import NavbarAdmin from "../components/navbar-admin";
 import Footer from "../components/footer";
 
 import { useEffect, useState } from "react";
@@ -10,7 +11,7 @@ import { getPet } from "../services/pet";
 export default function PhotosPage() {
   const [photos, setPhotos] = useState([]);
   const [noPhotos, setNoPhotos] = useState(false);  // Estado para verificar si no hay fotos
-  const [, setUser] = useState(null);
+  const [user, setUser] = useState(null);
   const [, setPet] = useState(null);
 
   // Obtener el usuario y si es admin mostrar todas las fotos,
@@ -85,7 +86,7 @@ export default function PhotosPage() {
 
   return (
     <>
-      <Navbar />
+      {user && user.id === "1" ? <NavbarAdmin /> : <Navbar />}
       <div className="flex flex-grow flex-wrap gap-4 justify-center pt-28 pb-10">
         {noPhotos ? (
           <p>No hay fotos disponibles</p>  // Mensaje si no hay fotos
@@ -93,7 +94,7 @@ export default function PhotosPage() {
           photos.map((photo) => {
             const rutaImagen = photo.contenido.replace(/\\/g, "/");
             console.log(rutaImagen);
-
+            console.log(photo);
             return (
               <img
                 key={photo.id}

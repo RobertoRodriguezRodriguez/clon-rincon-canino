@@ -1,5 +1,3 @@
-import { useNavigate } from "react-router-dom";
-
 const url = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 export async function getClient(navigate) {
@@ -226,17 +224,14 @@ export const updateClient = async (data) => {
   }
 };
 
-export const createClient = async (nombre, telefono, dni, email, password, repeatPassword) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const navigate = useNavigate();
-  
+export const createClient = async (nombre, telefono, dni, email, password, repeatPassword, navigate) => {
   try {
-    if (password.value !== repeatPassword.value) {
+    if (password !== repeatPassword) {
       alert("Passwords do not match");
       throw new Error("Passwords do not match");
     }
 
-    const response = await fetch("http://localhost:3002/api/client", {
+    const response = await fetch(`${url}/client`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

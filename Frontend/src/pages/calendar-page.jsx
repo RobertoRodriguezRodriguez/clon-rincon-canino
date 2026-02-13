@@ -10,6 +10,7 @@ import { getStay } from "../services/stay";
 import { getPetById } from "../services/pet";
 
 import { useEffect, useState } from "react";
+import NavbarAdmin from "../components/navbar-admin";
 
 // Actualizamos el uso de `moment.lang` a `moment.locale`
 moment.locale("es", {
@@ -128,7 +129,7 @@ export default function CalendarPage() {
 
   return (
     <div>
-      <Navbar />
+      <NavbarAdmin />
       <Calendar
         className="max-w-screen-xl mx-auto pt-24 sm:px-0 px-1 pb-1"
         localizer={localizer}

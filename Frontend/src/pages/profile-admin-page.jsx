@@ -17,6 +17,7 @@ import { getClient } from "../services/client";
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import NavbarAdmin from "../components/navbar-admin";
 
 export default function ProfileAdminPage() {
   const [user, setUser] = useState(null);
@@ -49,7 +50,7 @@ export default function ProfileAdminPage() {
 
   return (
     <>
-      <Navbar />
+      <NavbarAdmin />
       <div className="m-auto max-w-screen-lg w-full">
         {/* Información general del administrador */}
         <AdminInfo />

@@ -26,7 +26,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.NODE_PORT || 3001;
 
 // 1) CORS
 app.use(cors());

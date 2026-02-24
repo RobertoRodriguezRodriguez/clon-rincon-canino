@@ -5,12 +5,12 @@ dotenv.config();
 
 // Configuración de Sequelize
 const sequelize = new Sequelize(
-  "rincon_canino",
-  "admin",
-  "P_rc5_bbdd",
+  process.env.DATABASE,
+  process.env.USER,
+  process.env.PASSWORD,
   {
-    host: 'localhost',
-    port: 3306,
+    host: process.env.HOST,
+    port: process.env.PORT,
     dialect: 'mysql',
     logging: (msg) => console.log(`[Sequelize Log]: ${msg}`), // Habilitar logs detallados de Sequelize
     dialectOptions: {

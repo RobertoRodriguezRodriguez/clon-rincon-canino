@@ -25,7 +25,7 @@ npm run dev
 Por otro lado, para ejecutar la parte de backend del proyecto en modo desarrollo, se deberá ejecutar el siguiente comando estando dentro de la carpeta Backend:
 
 ```bash
-node app.js
+node --env-file=db.env app.js
 ```
 
 >> De momento, cada parte del proyecto se ejecuta por separado. En un futuro, se unificarán en un solo comando.

@@ -178,8 +178,8 @@ export default function Stay({ id_cliente, mascota, userName }) {
               <tr key={idx}>
                 <td style={{backgroundColor: "white", padding: "20px"}}>{formatDate(new Date(stay.fecha_inicio))}</td>
                 <td style={{backgroundColor: "white", padding: "20px"}}>{formatDate(new Date(stay.fecha_fin))}</td>
-                <td style={{backgroundColor: "white", padding: "20px"}}>{stay.cupo ? "Individual" : "Grupal"}</td>
-                <td style={{backgroundColor: "white", padding: "20px"}}>{stay.lista_espera ? "Aceptada" : "Pendiente"}</td>
+                <td style={{backgroundColor: "white", padding: "20px"}}>{stay.cupo}</td>
+                <td style={{backgroundColor: "white", padding: "20px"}}>{!stay.lista_espera ? "Aceptada" : "Pendiente"}</td>
               </tr>
             );
           })}

@@ -70,7 +70,7 @@ export default function ProfileUserPage() {
             <ReservationInfo id_cliente={user.id} id_pet={pet.id} />
             <IndividualClass id_cliente={user.id} />
             <GroupClass id_cliente={user.id} />
-            <Stay id_cliente={user.id} mascota={pet} />
+            <Stay id_cliente={user.id} mascota={pet} userName={user.nombre}/>
           </>
         ) : (
           <p>Por favor, registra una mascota para continuar.</p>

@@ -28,6 +28,19 @@ export const getStay = async () => {
   }
 };
 
+// Obtener estancias de un cliente
+export const getStayClient = async (userName) => {
+  try {
+    const response = await fetch(`${url}/stay/${userName}`);
+    if (!response.ok) throw new Error("404");
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 // Crear nueva estancia
 export const createStay = async (fecha_inicio, fecha_fin, cupo) => {
   if (!fecha_inicio || !fecha_fin) {

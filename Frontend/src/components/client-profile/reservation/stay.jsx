@@ -5,7 +5,7 @@ import "./reservation.css";
 
 import { formatDate } from "./utils";
 import { useStayPetStore } from "../../../stores/reservation-store";
-import { getStayAll } from "../../../services/stay";
+import { getStayAll, getStayClient } from "../../../services/stay";
 import { createStayClient as createStay } from "../../../services/stay_client";
 
 Stay.propTypes = {
@@ -14,12 +14,14 @@ Stay.propTypes = {
     id: PropTypes.string.isRequired,
     condicion_especial: PropTypes.bool.isRequired,
   }).isRequired,
+  userName: PropTypes.string.isRequired
 };
 
-export default function Stay({ id_cliente, mascota }) {
+export default function Stay({ id_cliente, mascota, userName }) {
   const [fecha_inicio, setFechaInicio] = useState("");
   const [fecha_fin, setFechaFin] = useState("");
   const [availableStays, setAvailableStays] = useState([]);
+  const [userStays, setUserStays] = useState([])
 
   const { reloadStays } = useStayPetStore();
   const toaster = useToaster();
@@ -37,7 +39,18 @@ export default function Stay({ id_cliente, mascota }) {
       }
     };
 
+    const fetchClientStays = async () => {
+      try {
+        const stays = await getStayClient(userName);
+        setUserStays(stays); 
+        } catch (error) {
+        
+        }
+        
+    };
+    
     fetchStays();
+    fetchClientStays();
   }, []);
 
   const handleReservation = async () => {
@@ -149,10 +162,32 @@ export default function Stay({ id_cliente, mascota }) {
         </button>
       </div>
 
-      <h3 className="pt-10 text-sm text-zinc-700">
-        Debe de esperar a que el administrador del sistema acepte su reserva.
-        Una vez aceptada le saldrá en la tabla de reservas.
-      </h3>
+      
+      <div style={{display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column"}} className="px-4 pt-8 space-y-3 display-table-cell">
+        <h3>Estancias</h3>
+        <table>
+        <thead style={{color: "#a09999", fontWeight: "normal !important"}}>
+          <th style={{backgroundColor: "white", padding: "20px"}}>Fecha inicio</th>
+          <th style={{backgroundColor: "white", padding: "20px"}}>Fecha fin</th>
+          <th style={{backgroundColor: "white", padding: "20px"}}>Cupo</th>
+          <th style={{backgroundColor: "white", padding: "20px"}}>Estado</th>
+        </thead>
+        <tbody style={{borderTop: "0.1px solid #D3D3D3"}}>
+          {userStays.map((stay, idx) => {
+            return (
+              <tr key={idx}>
+                <td style={{backgroundColor: "white", padding: "20px"}}>{formatDate(new Date(stay.fecha_inicio))}</td>
+                <td style={{backgroundColor: "white", padding: "20px"}}>{formatDate(new Date(stay.fecha_fin))}</td>
+                <td style={{backgroundColor: "white", padding: "20px"}}>{stay.cupo ? "Individual" : "Grupal"}</td>
+                <td style={{backgroundColor: "white", padding: "20px"}}>{stay.lista_espera ? "Aceptada" : "Pendiente"}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      </div>
+      
+
     </div>
   );
 }

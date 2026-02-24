@@ -55,6 +55,20 @@ router.get("/all", async (req, res) => {
 });
 
 // Mostrar estancias
+router.get("/:nombre", async (req, res) => {
+  const [results, metadata] = await sequelize.query(
+    `SELECT DISTINCT estancia.id, fecha_inicio, fecha_fin, cupo 
+    FROM estancia
+    INNER JOIN estancia_cliente ON estancia.id = estancia_cliente.id_estancia
+    INNER JOIN cliente ON cliente.id = estancia_cliente.id_cliente
+    WHERE cliente.nombre = '${req.params.nombre}';`
+  );
+  logger.info("Estancias encontradas: ", results);
+  res.json(results);
+});
+
+
+// Mostrar estancias
 router.get("/", async (req, res) => {
   Stay.findAll().then((stays) => {
     logger.info("Estancias encontradas", stays);

@@ -25,21 +25,19 @@ export default function ProfileAdminPage() {
 
   useEffect(() => {
     // Obtener los datos del usuario actual
-    getClient(navigate).then((user) => {
-      setUser(user);
+    getClient(navigate).then((userData) => {
+      if (userData.error) {
+        navigate("/login");
+      } else if (userData.id !== "1") {
+        navigate("/profile-user");
+      } else {
+        setUser(userData);
+      }
     });
   }, [navigate]);
 
   if (!user) {
     return null; // Retorna null si los datos del usuario aún no están disponibles
-  }
-
-  if (user.error) {
-    navigate("/login"); // Redirigir al login si hay un error con los datos del usuario
-  }
-
-  if (user.id !== "1") {
-    navigate("/profile-user"); // Redirigir al perfil de usuario si no es un administrador
   }
 
   // Función para alternar entre clases y estancias

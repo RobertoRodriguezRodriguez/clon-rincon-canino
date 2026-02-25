@@ -183,7 +183,7 @@ export default function Stay({ id_cliente, mascota, userName }) {
       
       <div style={{display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column"}} className="px-4 pt-8 space-y-3 display-table-cell">
         <h2 className="text-xl sm:font-extrabold font-semibold text-black">
-          Mis estancias: {userName}
+          Mis estancias
         </h2>
         <table>
           <thead style={{color: "#a09999", fontWeight: "normal !important"}}>

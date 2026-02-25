@@ -83,9 +83,12 @@ function useStay() {
   async function formatStay(stay) {
     const formated = await Promise.all(
       stay.map(async (stayItem) => {
-        const nombreMascota = await getPetById(stayItem.id_mascota);
+        let nombreMascota = { nombre: "Desconocido" };
+        if (stayItem.id_mascota) {
+          nombreMascota = await getPetById(stayItem.id_mascota) || nombreMascota;
+        }
         return {
-          title: `Estancia (${nombreMascota.nombre})`,
+          title: `Estancia (${nombreMascota.nombre || "Desconocido"})`,
           start: formatStayDate(stayItem.fecha_inicio),
           end: formatStayDate(stayItem.fecha_fin),
         };
@@ -99,6 +102,8 @@ function useStay() {
 // Hook para gestionar clases
 function useClasses() {
   const [classes, setClasses] = useState([]);
+  
+  const [user, setUser] = useState([]);
 
   useEffect(() => {
     getClasses().then(({ clasesGrupales, clasesIndividuales }) => {

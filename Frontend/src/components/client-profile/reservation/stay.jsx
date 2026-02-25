@@ -7,6 +7,7 @@ import { formatDate } from "./utils";
 import { useStayPetStore } from "../../../stores/reservation-store";
 import { getStayAll, getStayClient } from "../../../services/stay";
 import { createStayClient as createStay } from "../../../services/stay_client";
+import { getClassesByName } from "../../../services/class";
 
 Stay.propTypes = {
   id_cliente: PropTypes.string.isRequired,
@@ -22,6 +23,7 @@ export default function Stay({ id_cliente, mascota, userName }) {
   const [fecha_fin, setFechaFin] = useState("");
   const [availableStays, setAvailableStays] = useState([]);
   const [userStays, setUserStays] = useState([])
+  const [userClasses, setUserClasses] = useState([])
 
   const { reloadStays } = useStayPetStore();
   const toaster = useToaster();
@@ -43,12 +45,28 @@ export default function Stay({ id_cliente, mascota, userName }) {
       try {
         const stays = await getStayClient(userName);
         setUserStays(stays); 
-        } catch (error) {
-        
-        }
+      } catch (error) {
+        toaster.push(
+          <Notification type="error" header="Error cargando estancias." />,
+          { placement: "topEnd" }
+        );
+      }
         
     };
-    
+
+    const fetchClientClasses = async () => {
+      try {
+        const classes = await getClassesByName(userName);
+        setUserClasses(classes);
+      } catch(error) {
+        toaster.push(
+          <Notification type="error" header="Error cargando clases." />,
+          { placement: "topEnd" }
+        );
+      }
+    }
+
+    fetchClientClasses();
     fetchStays();
     fetchClientStays();
   }, []);
@@ -164,27 +182,55 @@ export default function Stay({ id_cliente, mascota, userName }) {
 
       
       <div style={{display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column"}} className="px-4 pt-8 space-y-3 display-table-cell">
-        <h3>Estancias</h3>
+        <h2 className="text-xl sm:font-extrabold font-semibold text-black">
+          Mis estancias: {userName}
+        </h2>
         <table>
-        <thead style={{color: "#a09999", fontWeight: "normal !important"}}>
-          <th style={{backgroundColor: "white", padding: "20px"}}>Fecha inicio</th>
-          <th style={{backgroundColor: "white", padding: "20px"}}>Fecha fin</th>
-          <th style={{backgroundColor: "white", padding: "20px"}}>Cupo</th>
-          <th style={{backgroundColor: "white", padding: "20px"}}>Estado</th>
-        </thead>
-        <tbody style={{borderTop: "0.1px solid #D3D3D3"}}>
-          {userStays.map((stay, idx) => {
-            return (
-              <tr key={idx}>
-                <td style={{backgroundColor: "white", padding: "20px"}}>{formatDate(new Date(stay.fecha_inicio))}</td>
-                <td style={{backgroundColor: "white", padding: "20px"}}>{formatDate(new Date(stay.fecha_fin))}</td>
-                <td style={{backgroundColor: "white", padding: "20px"}}>{stay.cupo}</td>
-                <td style={{backgroundColor: "white", padding: "20px"}}>{!stay.lista_espera ? "Aceptada" : "Pendiente"}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+          <thead style={{color: "#a09999", fontWeight: "normal !important"}}>
+            <th style={{backgroundColor: "white", padding: "20px"}}>Fecha inicio</th>
+            <th style={{backgroundColor: "white", padding: "20px"}}>Fecha fin</th>
+            <th style={{backgroundColor: "white", padding: "20px"}}>Cupo</th>
+            <th style={{backgroundColor: "white", padding: "20px"}}>Estado</th>
+          </thead>
+          <tbody style={{borderTop: "0.1px solid #D3D3D3"}}>
+            {userStays.map((stay, idx) => {
+              return (
+                <tr key={idx}>
+                  <td style={{backgroundColor: "white", padding: "20px"}}>{formatDate(new Date(stay.fecha_inicio))}</td>
+                  <td style={{backgroundColor: "white", padding: "20px"}}>{formatDate(new Date(stay.fecha_fin))}</td>
+                  <td style={{backgroundColor: "white", padding: "20px"}}>{stay.cupo}</td>
+                  <td style={{backgroundColor: "white", padding: "20px"}}>{!stay.lista_espera ? "Aceptada" : "Pendiente"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column"}} className="px-4 pt-8 space-y-3 display-table-cell">
+        <h2 className="text-xl sm:font-extrabold font-semibold text-black">
+          Mis clases
+        </h2>
+        <table>
+          <thead style={{color: "#a09999", fontWeight: "normal !important"}}>
+            <th style={{backgroundColor: "white", padding: "20px"}}>Fecha</th>
+            <th style={{backgroundColor: "white", padding: "20px"}}>Hora inicio</th>
+            <th style={{backgroundColor: "white", padding: "20px"}}>Hora fin</th>
+            <th style={{backgroundColor: "white", padding: "20px"}}>Cupo</th>
+          </thead>
+          <tbody style={{borderTop: "0.1px solid #D3D3D3"}}>
+            {userClasses.map((clase, idx) => {
+              return (
+                <tr key={idx}>
+                  <td style={{backgroundColor: "white", padding: "20px"}}>{formatDate(new Date(clase.fecha))}</td>
+                  <td style={{backgroundColor: "white", padding: "20px"}}>{clase.hora_inicio}</td>
+                  <td style={{backgroundColor: "white", padding: "20px"}}>{clase.hora_fin}</td>
+                  <td style={{backgroundColor: "white", padding: "20px"}}>{clase.cupo}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
       
 

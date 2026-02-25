@@ -235,6 +235,28 @@ router.get("/individual/available", async (req, res) => {
 });
 
 // ==========================================
+// Obtener clases filtradas por nombre de cliente
+// ==========================================
+router.get("/filter/:nombre", async (req, res) => {
+  const { nombre } = req.params;
+  try {
+    const [results] = await sequelize.query(`
+      SELECT DISTINCT clase.id, fecha, hora_inicio, hora_fin, cupo 
+      FROM clase
+      INNER JOIN clase_cliente ON clase.id = clase_cliente.id_clase
+      INNER JOIN cliente ON cliente.id = clase_cliente.id_cliente
+      WHERE cliente.nombre = :nombre
+      ORDER BY clase.fecha ASC;
+    `, { replacements: { nombre } });
+    logger.info(`Clases encontradas para el cliente ${nombre}: ${results.length}`);
+    res.json(results);
+  } catch (error) {
+    logger.error("Error al filtrar clases por nombre:", error);
+    res.status(500).json({ error: "Error interno al buscar clases" });
+  }
+});
+
+// ==========================================
 // 6) Obtener clases de UN usuario (GET /api/class/:id)
 //    (muestra las clases que tenga reservadas ese cliente)
 // ==========================================

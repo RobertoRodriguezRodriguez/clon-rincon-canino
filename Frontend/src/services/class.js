@@ -243,3 +243,23 @@ export const updateClass = async (classId, updatedData) => {
     throw error; // Lanza el error para que sea manejado fuera
   }
 };
+
+// Obtiene las clases filtradas por nombre de cliente
+export const getClassesByName = async (name) => {
+  try {
+    const response = await fetch(`${url}/class/filter/${encodeURIComponent(name)}`);
+
+    if (response.status === 404) {
+      console.warn("No se encontraron clases con ese nombre.");
+      return []; // Devolvemos un array vacío en lugar de lanzar error
+    }
+
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error obteniendo clases por nombre:", error);
+    return []; // Retorno seguro para evitar el error en .map() o lecturas
+  }
+};

@@ -11,6 +11,7 @@ import ProfileAdminPage from "./pages/profile-admin-page";
 import LoginPage from "./pages/login-page";
 import SignUpPage from "./pages/sign-up-page";
 import NotFoundPage from "./pages/not-found-page";
+import ChangePasswordPage from "./pages/change-password-page";
 
 import CalendarPage from "./pages/calendar-page";
 
@@ -23,6 +24,7 @@ function App() {
           <Route path="/photos" element={<PhotosPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/sign-up" element={<SignUpPage />} />
+          <Route path="/change-password" element={<ChangePasswordPage />} />
           <Route path="/404" element={<NotFoundPage />} />
           <Route path="/profile-user" element={<ProfileUserPage />} />
           <Route path="/profile-admin" element={<ProfileAdminPage />} />

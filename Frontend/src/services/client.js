@@ -254,3 +254,28 @@ export const createClient = async (nombre, telefono, dni, email, password, repea
     alert(error);
   }
 };
+// client.js
+export const changePassword = async (email, password) => {
+  try {
+    // Eliminamos los parámetros de la URL y usamos el body
+    const response = await fetch(`${url}/client/change-password`, { 
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }), // Enviamos los datos seguros aquí
+    });
+
+    // Validamos si la respuesta es OK antes de intentar convertir a JSON
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Error al cambiar la contraseña");
+    }
+
+    return data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};

@@ -140,6 +140,14 @@ export default function LoginPage() {
                 >
                   Contraseña
                 </label>
+                <div className="text-sm">
+                  <Link
+                    to="/change-password"
+                    className="font-semibold text-sky-500 hover:text-sky-200"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </div>
               </div>
               <div className="mt-2 bg-white px-3 flex w-full rounded-md border-0 py-1.5 text-gray-900 shadow-md ring-1 ring-inset ring-gray-300">
                 <input

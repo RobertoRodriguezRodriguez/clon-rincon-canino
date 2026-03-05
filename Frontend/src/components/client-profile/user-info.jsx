@@ -68,6 +68,7 @@ export default function UserInfo({ id, name, phone, email, dni }) {
         </dl>
       </div>
       {showForm && <ChangeDataForm id={id} phone={phone} email={email} />}
+      
     </section>
   );
 }

@@ -166,6 +166,33 @@ router.put("/update", async (req, res) => {
   });
 });
 
+// router.js
+router.put("/change-password", async (req, res) => {
+  const { email, password } = req.body; // Cambiado de req.params a req.body
+
+  if (!email || !password) {
+    logger.error("Faltan datos para cambiar la contraseña");
+    return res.status(400).json({ error: "Email y nueva contraseña son obligatorios" });
+  }
+
+  try {
+    const [updated] = await Client.update(
+      { password: sha1(password) },
+      { where: { email: email } }
+    );
+
+    if (updated) {
+      logger.info(`Contraseña actualizada para el usuario: ${email}`);
+      res.json({ message: "Contraseña actualizada correctamente" });
+    } else {
+      res.status(404).json({ error: "No se encontró un usuario con ese email" });
+    }
+  } catch (error) {
+    logger.error("Error al cambiar la contraseña:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
 // Eliminar usuario
 router.delete("/delete/:id", async (req, res) => {
   const { id } = req.params;

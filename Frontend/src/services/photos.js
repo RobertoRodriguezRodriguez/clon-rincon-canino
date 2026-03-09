@@ -25,3 +25,8 @@ export async function uploadPhoto(formData) {
     },
   });
 }
+
+// Función para eliminar una foto
+export const deletePhoto = async (id) => {
+  return axios.delete(`http://localhost:3001/api/photos/${id}`);
+};

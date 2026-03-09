@@ -7,12 +7,29 @@ import { useEffect, useState } from "react";
 // Importa tus servicios para llamadas a la API
 import { getClient } from "../services/client";
 import { getPet } from "../services/pet";
+import { deletePhoto } from "../services/photos";
 
 export default function PhotosPage() {
   const [photos, setPhotos] = useState([]);
   const [noPhotos, setNoPhotos] = useState(false);  // Estado para verificar si no hay fotos
   const [user, setUser] = useState(null);
   const [, setPet] = useState(null);
+
+  const handleDeletePhoto = async (id) => {
+    if (window.confirm("¿Estás seguro de que quieres eliminar esta foto?")) {
+      try {
+        await deletePhoto(id);
+        // Remove the deleted photo from the state
+        setPhotos(photos.filter(p => p.id !== id));
+        if (photos.length === 1) { // If the last photo is deleted
+          setNoPhotos(true);
+        }
+      } catch (error) {
+        console.error("Error al eliminar la foto:", error);
+        alert("Hubo un error al eliminar la foto.");
+      }
+    }
+  };
 
   // Obtener el usuario y si es admin mostrar todas las fotos,
   // si no, mostrar las fotos de su mascota
@@ -96,13 +113,23 @@ export default function PhotosPage() {
             console.log(rutaImagen);
             console.log(photo);
             return (
-              <img
-                key={photo.id}
-                className="h-auto max-w-full rounded-lg"
-                src={`http://localhost:3001/${rutaImagen}`} // Asumiendo que la ruta en el servidor es correcta
-                alt=""
-                style={{ width: "400px", height: "300px", objectFit: "cover" }}
-              />
+              <div key={photo.id} className="relative inline-block m-2">
+                <img
+                  className="h-auto max-w-full rounded-lg"
+                  src={`http://localhost:3001/${rutaImagen}`} // Asumiendo que la ruta en el servidor es correcta
+                  alt=""
+                  style={{ width: "400px", height: "300px", objectFit: "cover" }}
+                />
+                {user && (
+                  <button
+                    onClick={() => handleDeletePhoto(photo.id)}
+                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full shadow-lg z-10"
+                    title="Eliminar foto"
+                  >
+                    Eliminar
+                  </button>
+                )}
+              </div>
             );
           })
         )}

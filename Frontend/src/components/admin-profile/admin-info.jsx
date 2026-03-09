@@ -68,7 +68,7 @@ export default function AdminInfo() {
           Cambiar contraseña
         </button>
       </div>
-      {showForm && <ChangePasswordForm email={client.email} />}
+      {showForm && <ChangePasswordForm />}
     </section>
   );
 }

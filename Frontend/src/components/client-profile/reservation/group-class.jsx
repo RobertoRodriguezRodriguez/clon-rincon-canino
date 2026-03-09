@@ -42,29 +42,31 @@ export default function GroupClass({ id_cliente }) {
       );
       return;
     }
-    
+
     const reservationId = getReservation(clasesGroup, groupClassDate, selectedHour);
     console.log("Reservation ID:", reservationId);
 
 
     try {
       await createReservation(reservationId, id_cliente);
-      await getAvailableClass().then((clases) => {
-        setClasesGroup(clases.clasesDisponiblesGrupal || []);
-      });
+
+      const updatedClases = await getAvailableClass();
+      setClasesGroup(updatedClases.clasesDisponiblesGrupal || []);
+
       reloadReservClasses(id_cliente);
       toaster.push(
         <Notification type="success" header="Reserva guardada exitosamente." />,
         { placement: "topEnd" }
       );
     } catch (error) {
+      const errorMessage = error.message || "Error al guardar la reserva.";
       toaster.push(
-        <Notification type="error" header="Error al guardar la reserva." />,
+        <Notification type="error" header={errorMessage} />,
         { placement: "topEnd" }
       );
       console.error(error);
     }
-    
+
   };
 
   return (

@@ -102,19 +102,19 @@ function useStay() {
 // Hook para gestionar clases
 function useClasses() {
   const [classes, setClasses] = useState([]);
-  
+
   const [user, setUser] = useState([]);
 
   useEffect(() => {
     getClasses().then(({ clasesGrupales, clasesIndividuales }) => {
       const formattedClasses = [
         ...clasesIndividuales.map((classItem) => ({
-          title: `Clase individual (${classItem.nombre})`,
+          title: `Clase individual (${classItem.nombre || "Sin reserva"})`,
           start: formatDate(classItem.fecha, classItem.hora_inicio),
           end: formatDate(classItem.fecha, classItem.hora_fin),
         })),
         ...Object.values(clasesGrupales).map((classItem) => ({
-          title: `Clase grupal (${classItem.clientes.join(", ")})`,
+          title: `Clase grupal (${classItem.clientes.length > 0 ? classItem.clientes.join(", ") : "Sin reservas"})`,
           start: formatDate(classItem.fecha, classItem.hora_inicio),
           end: formatDate(classItem.fecha, classItem.hora_fin),
         })),

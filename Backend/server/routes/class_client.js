@@ -30,7 +30,7 @@ router.get("/group-reservations", async (req, res) => {
     `,
       { replacements: [limit, offset] }
     );
-    console.log("reservas en back",reservations);
+    console.log("reservas en back", reservations);
     res.status(200).json(reservations);
   } catch (error) {
     logger.error("Error al obtener las reservas grupales:", error);
@@ -43,11 +43,11 @@ router.post("/", async (req, res) => {
   const { id_clase, id_cliente } = req.body;
 
 
-  if (!id_clase ) {
+  if (!id_clase) {
     return res.status(400).json({ error: "Clase  no definida" });
   }
 
-  if ( !id_cliente) {
+  if (!id_cliente) {
     return res.status(400).json({ error: "Cliente no definido" });
   }
 
@@ -84,25 +84,25 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "El cliente ya tiene una reserva para esta clase" });
     }
 
-    // Verificar cupo de la clase
-    const [classCapacity] = await sequelize.query(
-      `SELECT cupo FROM clase WHERE id = ?;`,
-      { replacements: [id_clase] }
-    );
+    // Obtener cupo máximo y reservas actuales en una sola consulta
+    const [status] = await sequelize.query(`
+      SELECT 
+        c.cupo AS maxCupo,
+        COUNT(cc.id_cliente) AS currentReservations
+      FROM clase c
+      LEFT JOIN clase_cliente cc ON c.id = cc.id_clase
+      WHERE c.id = ?
+      GROUP BY c.id;
+    `, { replacements: [id_clase] });
 
-    // Asegurar que cupo no sea NULL y establecer un valor alto si lo es
-    const cupoMaximo = classCapacity.length && classCapacity[0].cupo !== null ? classCapacity[0].cupo : 1;
+    if (!status.length) {
+      return res.status(404).json({ error: "La clase no existe" });
+    }
 
-    // Obtener el número actual de reservas para la clase
-    const [currentReservations] = await sequelize.query(
-      `SELECT COUNT(*) AS total FROM clase_cliente WHERE id_clase = ?;`,
-      { replacements: [id_clase] }
-    );
+    const { maxCupo, currentReservations } = status[0];
 
-    console.log(`Cupo máximo: ${cupoMaximo}, Reservas actuales: ${currentReservations[0].total}`);
-
-    if (currentReservations[0].total >= cupoMaximo) {
-      return res.status(400).json({ error: "La clase está llena" });
+    if (currentReservations >= maxCupo) {
+      return res.status(400).json({ error: "No hay cupo disponible para esta clase." });
     }
 
     // Crear la reserva
@@ -112,6 +112,7 @@ router.post("/", async (req, res) => {
     );
 
     res.status(201).json({ message: "Reserva creada correctamente" });
+
   } catch (error) {
     console.error("Error al crear la reserva:", error);
     res.status(500).json({ error: "Error al crear la reserva" });
@@ -182,6 +183,8 @@ router.delete("/", async (req, res) => {
       `DELETE FROM clase_cliente WHERE id_clase = ? AND id_cliente = ?;`,
       { replacements: [id_clase, id_cliente] }
     );
+
+    console.log(`Clase ID ${id_clase}: Reserva eliminada (cupo se recalcula dinámicamente).`);
     res.status(200).json({ message: "Reserva eliminada correctamente" });
   } catch (error) {
     logger.error("Error al eliminar la reserva grupal:", error);

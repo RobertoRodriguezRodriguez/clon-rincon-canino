@@ -95,9 +95,14 @@ export default function ReservationInfo({ id_cliente, id_pet }) {
 
           <Column width={140} sortable>
             <HeaderCell>Tipo</HeaderCell>
-            <Cell dataKey="cupo">
-              {(rowData) => (rowData.cupo === 1 ? "Individual" : "Grupal")}
+            <Cell>
+              {(rowData) => ((rowData.cupo_original || rowData.cupo) === 1 ? "Individual" : "Grupal")}
             </Cell>
+          </Column>
+
+          <Column width={120} sortable>
+            <HeaderCell>Cupo</HeaderCell>
+            <Cell dataKey="cupo" />
           </Column>
         </Table>
       </div>
@@ -124,10 +129,10 @@ export default function ReservationInfo({ id_cliente, id_pet }) {
             <Cell dataKey="fecha_fin" />
           </Column>
 
-          {/* <Column width={80} sortable>
+          <Column width={120} sortable>
             <HeaderCell>Cupo</HeaderCell>
             <Cell dataKey="cupo" />
-          </Column> */}
+          </Column>
         </Table>
       </div>
     </div>

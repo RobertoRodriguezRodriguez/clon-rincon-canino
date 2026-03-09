@@ -176,12 +176,19 @@ router.put("/change-password", async (req, res) => {
   }
 
   try {
-    const [updated] = await Client.update(
+    // Actualizar contraseña en la tabla cliente
+    const [updatedClient] = await Client.update(
       { password: sha1(password) },
       { where: { email: email } }
     );
 
-    if (updated) {
+    // También actualizar en la tabla admin si existe
+    const [updatedAdmin] = await Admin.update(
+      { password: sha1(password) },
+      { where: { email: email } }
+    );
+
+    if (updatedClient || updatedAdmin) {
       logger.info(`Contraseña actualizada para el usuario: ${email}`);
       res.json({ message: "Contraseña actualizada correctamente" });
     } else {

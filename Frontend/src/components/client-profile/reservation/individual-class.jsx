@@ -41,7 +41,7 @@ export default function IndividualClass({ id_cliente }) {
       );
       return;
     }
-    
+
 
     const reservationId = getReservation(
       clasesIndividual,
@@ -51,19 +51,25 @@ export default function IndividualClass({ id_cliente }) {
 
     try {
       await createReservation(reservationId, id_cliente);
+
+      // Re-cargar clases individuales disponibles
+      const updatedClases = await getIndividualClassAvailable();
+      setClasesIndividual(updatedClases || []);
+
       reloadReservClasses(id_cliente);
       toaster.push(
         <Notification type="success" header="Reserva guardada exitosamente." />,
         { placement: "topEnd" }
       );
     } catch (error) {
+      const errorMessage = error.message || "Error al guardar la reserva.";
       toaster.push(
-        <Notification type="error" header="Error al guardar la reserva." />,
+        <Notification type="error" header={errorMessage} />,
         { placement: "topEnd" }
       );
       console.error(error);
     }
-    
+
   };
 
   return (

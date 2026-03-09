@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { changePassword, getClientsInfo } from "../../services/client";
 import { Notification, useToaster, SelectPicker, Input } from "rsuite";
+import PropTypes from "prop-types";
 
-export default function ChangePasswordForm() {
+export default function ChangePasswordForm({ adminEmail }) {
   const [clients, setClients] = useState([]);
   const [selectedClientEmail, setSelectedClientEmail] = useState(null);
   const [newPassword, setNewPassword] = useState("");
@@ -13,8 +14,14 @@ export default function ChangePasswordForm() {
       try {
         const clientData = await getClientsInfo();
         const activeClients = clientData.filter((client) => client.activo);
+
+        // Filtrar a la administradora si se proporciona su email
+        const filteredClients = adminEmail
+          ? activeClients.filter(client => client.email !== adminEmail)
+          : activeClients;
+
         setClients(
-          activeClients.map((client) => ({
+          filteredClients.map((client) => ({
             label: `${client.nombre_cliente} (${client.email})`,
             value: client.email,
           }))
@@ -114,3 +121,7 @@ export default function ChangePasswordForm() {
     </form>
   );
 }
+
+ChangePasswordForm.propTypes = {
+  adminEmail: PropTypes.string,
+};

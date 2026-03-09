@@ -15,18 +15,42 @@ router.post('/create', async (req, res) => {
   }
 
   try {
+    // Obtener cupo máximo y reservas actuales
+    const [status] = await sequelize.query(`
+      SELECT 
+        e.cupo AS maxCupo,
+        COUNT(ec.id_cliente) AS currentBookings
+      FROM estancia e
+      LEFT JOIN estancia_cliente ec ON e.id = ec.id_estancia
+      WHERE e.id = ?
+      GROUP BY e.id;
+    `, { replacements: [id_estancia] });
+
+    if (!status.length) {
+      return res.status(404).json({ error: "La estancia no existe." });
+    }
+
+    const { maxCupo, currentBookings } = status[0];
+
+    if (currentBookings >= maxCupo) {
+      return res.status(400).json({ error: "No hay cupo disponible para esta estancia." });
+    }
+
     const newStayClient = await StayClient.create({
       id_estancia,
       id_cliente,
-      lista_espera: lista_espera ?? false 
+      lista_espera: lista_espera ?? false,
     });
 
-    console.log('Nueva relación creada:', newStayClient);
+    console.log(`Estancia ID ${id_estancia}: Reserva creada (ocupación: ${currentBookings + 1}/${maxCupo})`);
 
-    res.status(201).json({ message: 'Relación creada correctamente', data: newStayClient });
+    res.status(201).json({
+      message: "Relación creada correctamente",
+      data: newStayClient,
+    });
   } catch (error) {
-    console.error('Error al crear la relación:', error);
-    res.status(500).json({ error: 'Error al crear la relación de estancia y cliente' });
+    console.error("Error al crear la relación o actualizar cupo:", error);
+    res.status(500).json({ error: "Error al crear la relación de estancia y cliente" });
   }
 });
 
@@ -58,12 +82,13 @@ router.delete('/', async (req, res) => {
     });
 
     if (deleted) {
+      console.log(`Estancia ID ${id_estancia}: Relación eliminada (cupo se recalcula dinámicamente).`);
       res.status(200).json({ message: 'Relación eliminada correctamente' });
     } else {
       res.status(404).json({ error: 'No se encontró la relación' });
     }
   } catch (error) {
-    console.error('Error al eliminar la relación:', error);
+    console.error('Error al eliminar la relación o restaurar cupo:', error);
     res.status(500).json({ error: 'Error al eliminar la relación de estancia y cliente' });
   }
 });

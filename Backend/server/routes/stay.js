@@ -46,34 +46,72 @@ router.post("/", async (req, res) => {
 
 // Mostrar estancias
 router.get("/all", async (req, res) => {
-  const [results, metadata] = await sequelize.query(
-    `SELECT DISTINCT estancia.id, fecha_inicio, fecha_fin, cupo 
-    FROM estancia;`
-  );
-  logger.info("Estancias encontradas: ", results);
-  res.json(results);
+  try {
+    const [results] = await sequelize.query(`
+      SELECT 
+        e.id, 
+        e.fecha_inicio, 
+        e.fecha_fin, 
+        (e.cupo - IFNULL(sub.total, 0)) AS cupo
+      FROM estancia e
+      LEFT JOIN (
+        SELECT id_estancia, COUNT(*) AS total FROM estancia_cliente GROUP BY id_estancia
+      ) sub ON e.id = sub.id_estancia;
+    `);
+    logger.info("Estancias encontradas (cupo dinámico): ", results);
+    res.json(results);
+  } catch (error) {
+    logger.error("Error al obtener todas las estancias:", error);
+    res.status(500).json({ error: "Error interno" });
+  }
 });
 
-// Mostrar estancias
+// Mostrar estancias de un cliente con cupo dinámico
 router.get("/:nombre", async (req, res) => {
-  const [results, metadata] = await sequelize.query(
-    `SELECT DISTINCT estancia.id, fecha_inicio, fecha_fin, cupo 
-    FROM estancia
-    INNER JOIN estancia_cliente ON estancia.id = estancia_cliente.id_estancia
-    INNER JOIN cliente ON cliente.id = estancia_cliente.id_cliente
-    WHERE cliente.nombre = '${req.params.nombre}';`
-  );
-  logger.info("Estancias encontradas: ", results);
-  res.json(results);
+  try {
+    const [results] = await sequelize.query(`
+      SELECT 
+        e.id, 
+        e.fecha_inicio, 
+        e.fecha_fin, 
+        (e.cupo - sub.total) AS cupo
+      FROM estancia e
+      INNER JOIN estancia_cliente ec ON e.id = ec.id_estancia
+      INNER JOIN cliente cli ON cli.id = ec.id_cliente
+      LEFT JOIN (
+        SELECT id_estancia, COUNT(*) AS total FROM estancia_cliente GROUP BY id_estancia
+      ) sub ON e.id = sub.id_estancia
+      WHERE cli.nombre = :nombre;
+    `, { replacements: { nombre: req.params.nombre } });
+
+    logger.info("Estancias del cliente encontradas: ", results);
+    res.json(results);
+  } catch (error) {
+    logger.error("Error al obtener estancias del cliente:", error);
+    res.status(500).json({ error: "Error interno" });
+  }
 });
 
 
-// Mostrar estancias
+// Mostrar estancias sin filtros con cupo dinámico
 router.get("/", async (req, res) => {
-  Stay.findAll().then((stays) => {
-    logger.info("Estancias encontradas", stays);
-    res.json(stays);
-  });
+  try {
+    const [results] = await sequelize.query(`
+      SELECT 
+        e.id, 
+        e.fecha_inicio, 
+        e.fecha_fin, 
+        (e.cupo - IFNULL(sub.total, 0)) AS cupo
+      FROM estancia e
+      LEFT JOIN (
+        SELECT id_estancia, COUNT(*) AS total FROM estancia_cliente GROUP BY id_estancia
+      ) sub ON e.id = sub.id_estancia;
+    `);
+    res.json(results);
+  } catch (error) {
+    logger.error("Error en GET /estancia:", error);
+    res.status(500).json({ error: "Error interno" });
+  }
 });
 
 // Actualizar estancia
@@ -113,21 +151,25 @@ router.put("/:id", async (req, res) => {
 // Mostrar número de estancias de una fecha que esté entre la fecha de entrada y la fecha de salida
 router.get("/:fecha", async (req, res) => {
   const { fecha } = req.params;
-  Stay.findAll({
-    where: {
-      [Op.and]: {
-        fecha_inicio: {
-          [Op.lte]: fecha,
-        },
-        fecha_fin: {
-          [Op.gte]: fecha,
-        },
-      },
-    },
-  }).then((stays) => {
-    logger.info("Estancias encontradas: ", stays);
-    res.json(stays);
-  });
+  try {
+    const [results] = await sequelize.query(`
+      SELECT 
+        e.id, 
+        e.fecha_inicio, 
+        e.fecha_fin, 
+        (e.cupo - IFNULL(sub.total, 0)) AS cupo
+      FROM estancia e
+      LEFT JOIN (
+        SELECT id_estancia, COUNT(*) AS total FROM estancia_cliente GROUP BY id_estancia
+      ) sub ON e.id = sub.id_estancia
+      WHERE e.fecha_inicio <= :fecha AND e.fecha_fin >= :fecha;
+    `, { replacements: { fecha } });
+
+    res.json(results);
+  } catch (error) {
+    logger.error("Error en GET /estancia/:fecha:", error);
+    res.status(500).json({ error: "Error interno" });
+  }
 });
 
 // Eliminar estancia
@@ -143,11 +185,29 @@ router.delete("/:id", async (req, res) => {
 // Obtener estancia por id
 router.get("/id/:id", async (req, res) => {
   const { id } = req.params;
-  const [results, metadata] = await sequelize.query(
-    `SELECT * FROM estancia WHERE id = '${id}';`
-  );
-  logger.info("Estancia encontrada: ", results);
-  res.json(results);
+  try {
+    const [results] = await sequelize.query(`
+      SELECT 
+        e.*, 
+        (e.cupo - IFNULL(sub.total, 0)) AS cupo_actual
+      FROM estancia e
+      LEFT JOIN (
+        SELECT id_estancia, COUNT(*) AS total FROM estancia_cliente GROUP BY id_estancia
+      ) sub ON e.id = sub.id_estancia
+      WHERE e.id = :id;
+    `, { replacements: { id } });
+
+    if (results.length > 0) {
+      // Map cupo_actual to cupo for frontend consistency
+      const result = { ...results[0], cupo: results[0].cupo_actual };
+      res.json([result]);
+    } else {
+      res.status(404).json({ error: "Estancia no encontrada" });
+    }
+  } catch (error) {
+    logger.error("Error en GET /estancia/id/:id:", error);
+    res.status(500).json({ error: "Error interno" });
+  }
 });
 
 export default router;

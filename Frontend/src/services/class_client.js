@@ -101,7 +101,7 @@ export async function deleteReservation(id_clase, id_cliente) {
 // Mostrar proxima clases en perfil de usuario
 export async function getReservations(id) {
   try {
-    const token = await fetch(`${url}/class`, {
+    const token = await fetch(`${url}/class/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

@@ -104,15 +104,25 @@ router.post("/", async (req, res) => {
 router.get("/all", async (req, res) => {
   try {
     const [results] = await sequelize.query(`
-      SELECT id_clase, nombre, fecha, hora_inicio, hora_fin, cupo 
-      FROM clase 
-      INNER JOIN clase_cliente ON clase.id = clase_cliente.id_clase 
-      INNER JOIN cliente ON cliente.id = clase_cliente.id_cliente;
+      SELECT 
+        c.id AS id_clase, 
+        cli.nombre, 
+        c.fecha, 
+        c.hora_inicio, 
+        c.hora_fin, 
+        c.cupo AS cupo_original,
+        (c.cupo - IFNULL(sub.total, 0)) AS cupo
+      FROM clase c
+      LEFT JOIN clase_cliente cc ON c.id = cc.id_clase 
+      LEFT JOIN cliente cli ON cli.id = cc.id_cliente
+      LEFT JOIN (
+        SELECT id_clase, COUNT(*) AS total FROM clase_cliente GROUP BY id_clase
+      ) sub ON c.id = sub.id_clase;
     `);
 
-    const clasesIndividuales = results.filter((c) => c.cupo === 1);
+    const clasesIndividuales = results.filter((c) => c.cupo_original === 1);
     const clasesGrupales = results
-      .filter((c) => c.cupo > 1)
+      .filter((c) => c.cupo_original > 1)
       .reduce((acc, c) => {
         if (!acc[c.id_clase]) {
           acc[c.id_clase] = {
@@ -124,7 +134,9 @@ router.get("/all", async (req, res) => {
             clientes: [],
           };
         }
-        acc[c.id_clase].clientes.push(c.nombre);
+        if (c.nombre) {
+          acc[c.id_clase].clientes.push(c.nombre);
+        }
         return acc;
       }, {});
 
@@ -144,21 +156,23 @@ router.get("/available", async (req, res) => {
   try {
     const [results] = await sequelize.query(`
       SELECT c.*, 
-      COUNT(cc.id_cliente) AS inscritos
+      (c.cupo - COUNT(cc.id_cliente)) AS cupo_disponible
       FROM clase c
       LEFT JOIN clase_cliente cc ON c.id = cc.id_clase
       GROUP BY c.id
-      HAVING inscritos < c.cupo;
+      HAVING cupo_disponible > 0;
     `);
 
     let clasesDisponiblesIndividual = [];
     let clasesDisponiblesGrupal = [];
 
     results.forEach((clase) => {
+      // Usar el valor calculado para la UI
+      const displayClase = { ...clase, cupo: clase.cupo_disponible };
       if (clase.cupo === 1) {
-        clasesDisponiblesIndividual.push(clase);
+        clasesDisponiblesIndividual.push(displayClase);
       } else if (clase.cupo > 1) {
-        clasesDisponiblesGrupal.push(clase);
+        clasesDisponiblesGrupal.push(displayClase);
       }
     });
 
@@ -179,18 +193,19 @@ router.get("/individual", async (req, res) => {
   try {
     const [results] = await sequelize.query(`
       SELECT 
-        clase.id AS id_clase,
-        clase.fecha,
-        clase.hora_inicio,
-        clase.hora_fin,
-        cliente.id AS id_cliente,
-        cliente.nombre AS nombre_cliente,
-        cliente.email AS email_cliente
-      FROM clase
-      INNER JOIN clase_cliente ON clase.id = clase_cliente.id_clase
-      INNER JOIN cliente ON cliente.id = clase_cliente.id_cliente
-      WHERE clase.cupo = 1
-      ORDER BY clase.fecha ASC;
+        c.id AS id_clase,
+        c.fecha,
+        c.hora_inicio,
+        c.hora_fin,
+        cli.id AS id_cliente,
+        cli.nombre AS nombre_cliente,
+        cli.email AS email_cliente,
+        (c.cupo - 1) AS cupo_restante
+      FROM clase c
+      INNER JOIN clase_cliente cc ON c.id = cc.id_clase
+      INNER JOIN cliente cli ON cli.id = cc.id_cliente
+      WHERE c.cupo = 1
+      ORDER BY c.fecha ASC;
     `);
 
     if (!results.length) {
@@ -198,8 +213,9 @@ router.get("/individual", async (req, res) => {
       return res.status(404).json({ clasesDisponiblesIndividual: [] });
     }
 
-    // Se devuelven las clases con la clave "clasesDisponiblesIndividual" para mantener consistencia
-    res.status(200).json({ clasesDisponiblesIndividual: results });
+    // Se mapea para que el cupo devuelto sea el dinámico (en individual suele ser 0 si ya está aquí)
+    const formattedResults = results.map(r => ({ ...r, cupo: r.cupo_restante }));
+    res.status(200).json({ clasesDisponiblesIndividual: formattedResults });
   } catch (error) {
     logger.error("Error al obtener clases individuales reservadas:", error);
     res.status(500).json({ error: "Error al obtener clases individuales." });
@@ -213,10 +229,10 @@ router.get("/individual", async (req, res) => {
 router.get("/individual/available", async (req, res) => {
   try {
     const [results] = await sequelize.query(`
-      SELECT c.*
+      SELECT c.*, (c.cupo - 0) AS cupo_actual
       FROM clase c
       LEFT JOIN clase_cliente cc ON c.id = cc.id_clase
-      WHERE c.cupo = 1
+      WHERE c.cupo > 0
         AND cc.id_clase IS NULL
       ORDER BY c.fecha ASC;
     `);
@@ -226,8 +242,8 @@ router.get("/individual/available", async (req, res) => {
       return res.json({ clasesDisponiblesIndividual: [] });
     }
 
-    logger.info("Clases individuales disponibles encontradas:", results.length);
-    res.json({ clasesDisponiblesIndividual: results });
+    const formattedResults = results.map(r => ({ ...r, cupo: r.cupo_actual }));
+    res.json({ clasesDisponiblesIndividual: formattedResults });
   } catch (error) {
     logger.error("Error al obtener clases individuales disponibles:", error);
     res.status(500).json({ error: "Error interno en /individual/available" });
@@ -241,10 +257,19 @@ router.get("/filter/:nombre", async (req, res) => {
   const { nombre } = req.params;
   try {
     const [results] = await sequelize.query(`
-      SELECT DISTINCT clase.id, fecha, hora_inicio, hora_fin, cupo 
+      SELECT DISTINCT 
+        clase.id, 
+        fecha, 
+        hora_inicio, 
+        hora_fin, 
+        clase.cupo AS cupo_original,
+        (clase.cupo - IFNULL(sub.total, 0)) AS cupo
       FROM clase
       INNER JOIN clase_cliente ON clase.id = clase_cliente.id_clase
       INNER JOIN cliente ON cliente.id = clase_cliente.id_cliente
+      LEFT JOIN (
+        SELECT id_clase, COUNT(*) AS total FROM clase_cliente GROUP BY id_clase
+      ) sub ON clase.id = sub.id_clase
       WHERE cliente.nombre = :nombre
       ORDER BY clase.fecha ASC;
     `, { replacements: { nombre } });
@@ -269,20 +294,24 @@ router.get("/:id", async (req, res) => {
   try {
     const [results] = await sequelize.query(`
       SELECT 
-        clase.id AS id_clase,
-        clase.fecha,
-        clase.hora_inicio,
-        clase.hora_fin,
-        clase.cupo,
-        cliente.id AS id_cliente,
-        cliente.nombre AS nombre_cliente,
-        cliente.email AS email_cliente
-      FROM clase
-      INNER JOIN clase_cliente ON clase.id = clase_cliente.id_clase
-      INNER JOIN cliente ON cliente.id = clase_cliente.id_cliente
-      WHERE cliente.id = '${id}'
-      ORDER BY clase.fecha ASC;
-    `);
+        c.id AS id_clase,
+        c.fecha,
+        c.hora_inicio,
+        c.hora_fin,
+        c.cupo AS cupo_original,
+        (c.cupo - IFNULL(sub.total, 0)) AS cupo,
+        cli.id AS id_cliente,
+        cli.nombre AS nombre_cliente,
+        cli.email AS email_cliente
+      FROM clase c
+      INNER JOIN clase_cliente cc ON c.id = cc.id_clase
+      INNER JOIN cliente cli ON cli.id = cc.id_cliente
+      LEFT JOIN (
+        SELECT id_clase, COUNT(*) AS total FROM clase_cliente GROUP BY id_clase
+      ) sub ON c.id = sub.id_clase
+      WHERE cli.id = ?
+      ORDER BY c.fecha ASC;
+    `, { replacements: [id] });
 
     res.status(200).json(results);
   } catch (error) {
@@ -296,9 +325,17 @@ router.get("/:id", async (req, res) => {
 // ==========================================
 router.get("/", async (req, res) => {
   try {
-    const clases = await Class.findAll();
-    logger.info("Clases encontradas - Tabla clase");
-    res.json(clases);
+    const [clases] = await sequelize.query(`
+      SELECT c.*, (c.cupo - IFNULL(sub.total, 0)) AS cupo_actual
+      FROM clase c
+      LEFT JOIN (
+        SELECT id_clase, COUNT(*) AS total FROM clase_cliente GROUP BY id_clase
+      ) sub ON c.id = sub.id_clase;
+    `);
+
+    // Mapear el cupo calculado al campo 'cupo' para el frontend
+    const results = clases.map(c => ({ ...c, cupo: c.cupo_actual }));
+    res.json(results);
   } catch (error) {
     logger.error("Error al listar clases sin join:", error);
     res.status(500).json({ error: "Error interno" });

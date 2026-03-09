@@ -1,11 +1,11 @@
-import { DatePicker, Radio, RadioGroup, Form, Notification, useToaster } from "rsuite";
+import { DatePicker, Radio, RadioGroup, Form, Notification, useToaster, CustomProvider } from "rsuite";
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import "./reservation.css";
 
 import isBefore from "date-fns/isBefore";
 
-import { getDates, getHours, getReservation, shouldDisableDate } from "./utils";
+import { getDates, getHours, getReservation, shouldDisableDate, formatDate } from "./utils";
 
 import { useReservClassesStore } from "../../../stores/reservation-store";
 
@@ -70,46 +70,101 @@ export default function GroupClass({ id_cliente }) {
   };
 
   return (
-    <div className="px-4 pt-8 space-y-3">
-      <h2 className="text-xl sm:font-extrabold font-semibold text-black">
-        Reservar clase grupal
-      </h2>
-      <DatePicker
-        shouldDisableDate={(date) =>
-          shouldDisableDate(date, abledDatesGroup) || isBefore(date, new Date())
-        }
-        onChange={(date) => {
-          setGroupClassDate(date);
-          setShowGroupHours(true);
-        }}
-        className="pt-1 w-full mx-auto max-w-screen-lg"
-        size="lg"
-        placeholder="Selecciona una fecha"
-        format="yyyy-MM-dd"
-      />
-      {showGroupHours && (
-        <Form.Group controlId="radioGroup">
-          <RadioGroup
-            name="radioGroup"
-            onChange={(value) => setSelectedHour(value)}
-          >
-            {getHours(clasesGroup, groupClassDate).map((hour) => (
-              <Radio key={hour} value={hour}>
-                {hour}
-              </Radio>
-            ))}
-          </RadioGroup>
-        </Form.Group>
-      )}
-      <div className="text-center">
-        <button
-          type="button"
-          onClick={handleSave}
-          className="inline-flex items-center text-zinc-700 hover:text-green-700 border border-zinc-700 hover:border-green-700 focus:ring-2 focus:outline-none focus:ring-green-600 font-medium rounded-lg text-sm px-5 py-1 text-center"
-        >
-          Guardar
-        </button>
-      </div>
-    </div>
+    <CustomProvider theme="dark">
+      <section className="relative group">
+        {/* Decorative Accent Glow */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-brand-violet/10 to-brand-cyan/10 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000" />
+
+        <div className="relative bg-[#161616] border border-white/5 rounded-[2.5rem] p-8 md:p-10 shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-violet/5 to-transparent pointer-events-none" />
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10">
+            {/* Left Column: Info & Hours */}
+            <div className="space-y-8 flex flex-col justify-between">
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-violet mb-2">
+                    Paso 1: Selecciona horario
+                  </h2>
+                  <h3 className="text-xl font-bold text-white">
+                    Entrena en <span className="text-zinc-500">comunidad</span>
+                  </h3>
+                </div>
+
+                {showGroupHours ? (
+                  <div className="space-y-4 pt-6 border-t border-white/5 animate-in fade-in slide-in-from-left-4 duration-500">
+                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
+                      Horarios para el {formatDate(groupClassDate)}
+                    </label>
+                    <div className="bg-[#1e1e1e]/50 rounded-2xl p-6 border border-white/5">
+                      <RadioGroup
+                        name="radioGroup"
+                        inline
+                        onChange={(value) => setSelectedHour(value)}
+                        className="flex flex-wrap gap-4"
+                      >
+                        {getHours(clasesGroup, groupClassDate).map((hour) => {
+                          const findClase = clasesGroup.find(
+                            (c) => c.fecha === formatDate(groupClassDate) && c.hora_inicio === hour
+                          );
+                          return (
+                            <Radio
+                              key={hour}
+                              value={hour}
+                              className="!flex items-center space-x-2 text-sm font-bold text-zinc-300 hover:text-brand-violet transition-colors"
+                            >
+                              <span className="text-zinc-200">{hour}</span>
+                              <span className="text-[10px] font-black bg-white/5 px-2 py-0.5 rounded text-zinc-500">
+                                CUPO: {findClase?.cupo}
+                              </span>
+                            </Radio>
+                          );
+                        })}
+                      </RadioGroup>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-8 border-2 border-dashed border-white/5 rounded-3xl text-center">
+                    <p className="text-zinc-600 text-sm font-medium">Selecciona un día en el calendario de la derecha</p>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                className="relative w-full py-4 rounded-2xl overflow-hidden group/btn shadow-[0_0_20px_rgba(139,92,246,0.1)] hover:shadow-[0_0_30px_rgba(6,182,212,0.2)] transition-all duration-500 mt-auto"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-violet to-brand-cyan transition-transform duration-500 group-hover/btn:scale-105" />
+                <div className="relative text-white font-black text-xs tracking-[0.25em] uppercase text-center">
+                  Confirmar Clase
+                </div>
+              </button>
+            </div>
+
+            {/* Right Column: Calendar */}
+            <div className="space-y-4">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-brand-violet ml-2 text-right">
+                Paso 2: Calendario
+              </label>
+              <div className="bg-[#1e1e1e] border border-white/10 rounded-[2.5rem] p-4 shadow-2xl">
+                <DatePicker
+                  inline
+                  shouldDisableDate={(date) =>
+                    shouldDisableDate(date, abledDatesGroup) || isBefore(date, new Date())
+                  }
+                  onChange={(date) => {
+                    setGroupClassDate(date);
+                    setShowGroupHours(true);
+                  }}
+                  className="custom-inline-picker"
+                  format="yyyy-MM-dd"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </CustomProvider>
   );
 }

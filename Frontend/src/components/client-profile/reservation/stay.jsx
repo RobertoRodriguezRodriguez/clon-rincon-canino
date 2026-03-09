@@ -1,7 +1,10 @@
-import { Notification, useToaster } from "rsuite";
+import { DateRangePicker, Notification, useToaster, CustomProvider } from "rsuite";
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import "./reservation.css";
+import isBefore from "date-fns/isBefore";
+import isAfter from "date-fns/isAfter";
+import startOfDay from "date-fns/startOfDay";
 
 import { formatDate } from "./utils";
 import { useStayPetStore } from "../../../stores/reservation-store";
@@ -76,25 +79,31 @@ export default function Stay({ id_cliente, mascota, userName }) {
       toaster.push(
         <Notification
           type="error"
-          header="Selecciona una estancia disponible."
+          header="Por favor, selecciona un rango de fechas."
         />,
         { placement: "topEnd" }
       );
       return;
     }
 
-    // Buscar la estancia correspondiente a las fechas seleccionadas
-    const selectedStay = availableStays.find(
-      (stay) =>
-        formatDate(new Date(stay.fecha_inicio)) === fecha_inicio &&
-        formatDate(new Date(stay.fecha_fin)) === fecha_fin
-    );
+    // Buscar la estancia (bloque admin) que contiene el rango seleccionado por el usuario
+    const selectedStayBlock = availableStays.find((stay) => {
+      const blockStart = new Date(stay.fecha_inicio);
+      const blockEnd = new Date(stay.fecha_fin);
+      const userStart = new Date(fecha_inicio);
+      const userEnd = new Date(fecha_fin);
 
-    if (!selectedStay) {
+      return (
+        (userStart >= blockStart || formatDate(userStart) === formatDate(blockStart)) &&
+        (userEnd <= blockEnd || formatDate(userEnd) === formatDate(blockEnd))
+      );
+    });
+
+    if (!selectedStayBlock) {
       toaster.push(
         <Notification
           type="error"
-          header="No se encontró la estancia seleccionada."
+          header="El rango seleccionado debe estar dentro de un periodo disponible."
         />,
         { placement: "topEnd" }
       );
@@ -102,9 +111,9 @@ export default function Stay({ id_cliente, mascota, userName }) {
     }
 
     try {
-      await createStay(selectedStay.id, id_cliente, true);
+      await createStay(selectedStayBlock.id, id_cliente, fecha_inicio, fecha_fin, true);
 
-      // Re-cargar estancias para actualizar el cupo en la UI
+      // Re-cargar estancias
       const updatedStays = await getStayAll();
       setAvailableStays(updatedStays);
 
@@ -130,119 +139,186 @@ export default function Stay({ id_cliente, mascota, userName }) {
   };
 
   if (!mascota?.id) {
-    return <p>Por favor, registra una mascota para continuar.</p>;
+    return (
+      <div className="p-8 border-2 border-dashed border-white/5 rounded-[2.5rem] text-center">
+        <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">
+          Regresa a la pestaña "Información" para registrar una mascota.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="px-4 pt-8 space-y-3">
-      <h2 className="text-xl sm:font-extrabold font-semibold text-black">
-        Reservar estancia
-      </h2>
+    <CustomProvider theme="dark">
+      <div className="space-y-10">
+        {/* Booking Card */}
+        <section className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand-cyan/10 to-brand-violet/10 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000" />
 
-      <select
-        onChange={(e) => {
-          const [start, end] = e.target.value.split(" to ");
-          setFechaInicio(start);
-          setFechaFin(end);
-        }}
-        className="pt-1 w-full mx-auto max-w-screen-lg border border-zinc-400 rounded-lg p-2 text-sm"
-      >
-        <option value="">Selecciona una estancia disponible</option>
-        {availableStays.map((stay, idx) => {
-          // Formateamos las fechas
-          const startDate = new Date(stay.fecha_inicio);
-          const endDate = new Date(stay.fecha_fin);
+          <div className="relative bg-[#161616] border border-white/5 rounded-[2.5rem] p-8 md:p-10 shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent pointer-events-none" />
 
-          // Formato de fecha con día de la semana y nombre del mes
-          const formattedStartDate = startDate.toLocaleDateString("es-ES", {
-            weekday: "long", // Día de la semana
-            year: "numeric",
-            month: "long", // Nombre del mes
-            day: "numeric",
-          });
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-cyan mb-2">
+                    Reserva de Estancia
+                  </h2>
+                  <h3 className="text-2xl md:text-3xl font-black tracking-tight text-white">
+                    Elige el rango <span className="text-zinc-500">perfecto</span>
+                  </h3>
+                </div>
 
-          const formattedEndDate = endDate.toLocaleDateString("es-ES", {
-            weekday: "long", // Día de la semana
-            year: "numeric",
-            month: "long", // Nombre del mes
-            day: "numeric",
-          });
+                <div className="space-y-4 pt-6 border-t border-white/5">
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
+                    Selecciona Entrada y Salida
+                  </label>
+                  <DateRangePicker
+                    block
+                    placeholder="Seleccionar Rango"
+                    format="yyyy-MM-dd"
+                    onChange={(value) => {
+                      if (value) {
+                        setFechaInicio(formatDate(value[0]));
+                        setFechaFin(formatDate(value[1]));
+                      } else {
+                        setFechaInicio("");
+                        setFechaFin("");
+                      }
+                    }}
+                    shouldDisableDate={(date) => {
+                      // Deshabilitar si es antes de hoy
+                      if (isBefore(date, startOfDay(new Date()))) return true;
 
-          return (
-            <option
-              key={idx}
-              value={`${formatDate(startDate)} to ${formatDate(endDate)}`}
-            >
-              {`${formattedStartDate} → ${formattedEndDate}`}
-            </option>
-          );
-        })}
-      </select>
+                      // Solo habilitar si cae dentro de algún bloque de availableStays
+                      const isAvailable = availableStays.some((stay) => {
+                        const start = new Date(stay.fecha_inicio);
+                        const end = new Date(stay.fecha_fin);
+                        return (
+                          (date >= start || formatDate(date) === formatDate(start)) &&
+                          (date <= end || formatDate(date) === formatDate(end))
+                        );
+                      });
+                      return !isAvailable;
+                    }}
+                    className="custom-date-range-picker"
+                  />
+                  <p className="text-[10px] text-zinc-500 italic ml-2">
+                    * Solo puedes seleccionar fechas resaltadas por el administrador.
+                  </p>
+                </div>
 
-      <div className="text-center">
-        <button
-          type="button"
-          onClick={handleReservation}
-          className="inline-flex items-center text-zinc-700 hover:text-green-700 border border-zinc-700 hover:border-green-700 focus:ring-2 focus:outline-none focus:ring-green-600 font-medium rounded-lg text-sm px-5 py-1 text-center"
-        >
-          Guardar
-        </button>
+                <button
+                  type="button"
+                  onClick={handleReservation}
+                  className="relative w-full py-4 rounded-2xl overflow-hidden group/btn shadow-[0_0_20px_rgba(6,182,212,0.1)] hover:shadow-[0_0_30px_rgba(139,92,246,0.2)] transition-all duration-500"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-brand-cyan to-brand-violet transition-transform duration-500 group-hover/btn:scale-105" />
+                  <div className="relative text-white font-black text-xs tracking-[0.25em] uppercase text-center">
+                    Confirmar Estancia
+                  </div>
+                </button>
+              </div>
+
+              <div className="hidden lg:flex flex-col items-center justify-center p-8 border border-white/5 bg-white/[0.02] rounded-[2.5rem] text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-brand-cyan/10 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-white font-bold">Flexibilidad Total</h4>
+                  <p className="text-zinc-500 text-sm mt-1">Reserva solo los días que necesites dentro de los periodos habilitados.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Internal Management Tables */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 opacity-80 hover:opacity-100 transition-opacity">
+          {/* User Stays Table */}
+          <div className="bg-[#161616]/50 border border-white/5 rounded-[2.5rem] p-8">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 mb-6 flex items-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-violet mr-2" />
+              Mis Estancias
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-white/5">
+                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-zinc-600">Entrada</th>
+                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-zinc-600">Salida</th>
+                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-zinc-600 text-center">Cupo</th>
+                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-zinc-600 text-right">Estado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {userStays.map((stay, idx) => (
+                    <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
+                      <td className="py-4 text-xs font-bold text-zinc-300">{formatDate(new Date(stay.fecha_inicio))}</td>
+                      <td className="py-4 text-xs font-bold text-zinc-300">{formatDate(new Date(stay.fecha_fin))}</td>
+                      <td className="py-4 text-xs font-black text-zinc-400 text-center">#{stay.cupo}</td>
+                      <td className="py-4 text-right">
+                        <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${!stay.lista_espera ? "bg-brand-cyan/10 text-brand-cyan" : "bg-zinc-800 text-zinc-500"
+                          }`}>
+                          {!stay.lista_espera ? "Aceptada" : "Pendiente"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {userStays.length === 0 && (
+                    <tr>
+                      <td colSpan="3" className="py-8 text-center text-zinc-700 font-bold uppercase tracking-widest text-[10px] italic">
+                        Sin historial de estancias
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* User Classes Table */}
+          <div className="bg-[#161616]/50 border border-white/5 rounded-[2.5rem] p-8">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 mb-6 flex items-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan mr-2" />
+              Mis Clases
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-white/5">
+                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-zinc-600">Fecha</th>
+                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-zinc-600">Horario</th>
+                    <th className="pb-4 text-[10px] font-black uppercase tracking-widest text-zinc-600 text-right">Cupo</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {userClasses.map((clase, idx) => (
+                    <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
+                      <td className="py-4 text-xs font-bold text-zinc-300">{formatDate(new Date(clase.fecha))}</td>
+                      <td className="py-4 text-xs font-bold text-zinc-300">
+                        {clase.hora_inicio} - {clase.hora_fin}
+                      </td>
+                      <td className="py-4 text-xs font-black text-zinc-400 text-right">
+                        #{clase.cupo}
+                      </td>
+                    </tr>
+                  ))}
+                  {userClasses.length === 0 && (
+                    <tr>
+                      <td colSpan="3" className="py-8 text-center text-zinc-700 font-bold uppercase tracking-widest text-[10px] italic">
+                        Sin historial de clases
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
-
-
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column" }} className="px-4 pt-8 space-y-3 display-table-cell">
-        <h2 className="text-xl sm:font-extrabold font-semibold text-black">
-          Mis estancias
-        </h2>
-        <table>
-          <thead style={{ color: "#a09999", fontWeight: "normal !important" }}>
-            <th style={{ backgroundColor: "white", padding: "20px" }}>Fecha inicio</th>
-            <th style={{ backgroundColor: "white", padding: "20px" }}>Fecha fin</th>
-            <th style={{ backgroundColor: "white", padding: "20px" }}>Cupo</th>
-            <th style={{ backgroundColor: "white", padding: "20px" }}>Estado</th>
-          </thead>
-          <tbody style={{ borderTop: "0.1px solid #D3D3D3" }}>
-            {userStays.map((stay, idx) => {
-              return (
-                <tr key={idx}>
-                  <td style={{ backgroundColor: "white", padding: "20px" }}>{formatDate(new Date(stay.fecha_inicio))}</td>
-                  <td style={{ backgroundColor: "white", padding: "20px" }}>{formatDate(new Date(stay.fecha_fin))}</td>
-                  <td style={{ backgroundColor: "white", padding: "20px" }}>{stay.cupo}</td>
-                  <td style={{ backgroundColor: "white", padding: "20px" }}>{!stay.lista_espera ? "Aceptada" : "Pendiente"}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column" }} className="px-4 pt-8 space-y-3 display-table-cell">
-        <h2 className="text-xl sm:font-extrabold font-semibold text-black">
-          Mis clases
-        </h2>
-        <table>
-          <thead style={{ color: "#a09999", fontWeight: "normal !important" }}>
-            <th style={{ backgroundColor: "white", padding: "20px" }}>Fecha</th>
-            <th style={{ backgroundColor: "white", padding: "20px" }}>Hora inicio</th>
-            <th style={{ backgroundColor: "white", padding: "20px" }}>Hora fin</th>
-            <th style={{ backgroundColor: "white", padding: "20px" }}>Cupo</th>
-          </thead>
-          <tbody style={{ borderTop: "0.1px solid #D3D3D3" }}>
-            {userClasses.map((clase, idx) => {
-              return (
-                <tr key={idx}>
-                  <td style={{ backgroundColor: "white", padding: "20px" }}>{formatDate(new Date(clase.fecha))}</td>
-                  <td style={{ backgroundColor: "white", padding: "20px" }}>{clase.hora_inicio}</td>
-                  <td style={{ backgroundColor: "white", padding: "20px" }}>{clase.hora_fin}</td>
-                  <td style={{ backgroundColor: "white", padding: "20px" }}>{clase.cupo}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-
-    </div>
+    </CustomProvider>
   );
 }

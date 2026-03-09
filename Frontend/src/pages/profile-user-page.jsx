@@ -49,9 +49,10 @@ export default function ProfileUserPage() {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans">
       <Navbar />
-      <div className="m-auto max-w-screen-lg w-screen overflow-x-hidden">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 space-y-12">
+        {/* Profile Card Section */}
         <UserInfo
           id={user.id}
           name={user.nombre}
@@ -59,46 +60,52 @@ export default function ProfileUserPage() {
           dni={user.dni}
           phone={user.telefono}
         />
+
         {pet?.id_cliente === user.id && (
-          <>
-            <PetInfo pet={pet} />
-          </>
-        ) }
-        <hr className="h-px mb-8 bg-gray-200 border-2 shadow-2xl"></hr>
-        {pet?.id ? (
-          <>
-            <ReservationInfo id_cliente={user.id} id_pet={pet.id} />
-            <IndividualClass id_cliente={user.id} />
-            <GroupClass id_cliente={user.id} />
-            <Stay id_cliente={user.id} mascota={pet} userName={user.nombre}/>
-          </>
-        ) : (
-          <p>Por favor, registra una mascota para continuar.</p>
+          <PetInfo pet={pet} />
         )}
-        <hr className="h-px mb-8 mt-8 bg-gray-200 border-2 shadow-2xl"></hr>
-        <div className="px-8 pb-10 space-y-2 text-center space-x-5">
-        {pet?.id_cliente === user.id ? (
-          <>
-            <UploadPetPhoto petId={pet.id} /> 
-          </>
-        ) : (
-          <BookForm id_cliente={user.id} />
-        )}
+
+        {/* Reservations Section */}
+        <div className="space-y-12">
+          {pet?.id ? (
+            <>
+              <ReservationInfo id_cliente={user.id} id_pet={pet.id} />
+              <div className="space-y-12">
+                <IndividualClass id_cliente={user.id} />
+                <GroupClass id_cliente={user.id} />
+              </div>
+              <Stay id_cliente={user.id} mascota={pet} userName={user.nombre} />
+            </>
+          ) : (
+            <div className="bg-[#161616] border border-white/5 rounded-3xl p-10 text-center shadow-xl">
+              <p className="text-zinc-400 font-medium">Por favor, registra una mascota para continuar.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Action Section */}
+        <div className="flex flex-col items-center justify-center space-y-8 pt-8">
+          {pet?.id_cliente === user.id ? (
+            <UploadPetPhoto petId={pet.id} />
+          ) : (
+            <BookForm id_cliente={user.id} />
+          )}
+
           <button
             type="button"
             onClick={() => {
               sessionStorage.removeItem("token");
               navigate("/login");
             }}
-            className="inline-flex items-center text-red-600 hover:text-white border border-red-600 hover:border-red-800 hover:bg-red-800 focus:ring-2 focus:outline-none focus:ring-red-400 font-medium rounded-lg text-sm px-5 py-1 text-center"
+            className="group flex items-center space-x-2 text-zinc-500 hover:text-red-400 transition-colors duration-300 font-bold uppercase tracking-[0.2em] text-xs"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth="1.5"
+              strokeWidth="2.5"
               stroke="currentColor"
-              className="w-5 h-5 mr-1.5 -ml-1"
+              className="w-4 h-4 transform group-hover:rotate-12 transition-transform"
             >
               <path
                 strokeLinecap="round"
@@ -106,11 +113,11 @@ export default function ProfileUserPage() {
                 d="M6 18 18 6M6 6l12 12"
               />
             </svg>
-            Cerrar sesión
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }

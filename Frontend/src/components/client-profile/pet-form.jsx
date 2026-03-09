@@ -72,11 +72,11 @@ export default function PetForm({ pet }) {
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <div className="grid gap-4 px-4 sm:grid-cols-2 sm:gap-6">
-          <div className="sm:col-span-2">
-            <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900">
+    <div className="bg-[#1e1e1e]/50 rounded-3xl p-6 md:p-8 border border-white/5 mx-2 md:mx-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="grid gap-8 sm:grid-cols-2">
+          <div className="sm:col-span-2 space-y-2">
+            <label htmlFor="name" className="block text-xs font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
               Nombre de tu mascota
             </label>
             <input
@@ -85,30 +85,29 @@ export default function PetForm({ pet }) {
               id="name"
               onChange={handleNombreChange}
               onBlur={handleNombreBlur}
-              className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 block w-full p-2.5 ${
-                nombre.error && nombre.touched ? "border-red-500" : ""
-              }`}
-              placeholder="Nombre"
+              className={`w-full bg-[#161616] border border-white/10 rounded-2xl py-3 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 focus:border-brand-cyan transition-all duration-300 ${nombre.error && nombre.touched ? "border-red-500" : ""
+                }`}
+              placeholder="Ej: Max"
               value={nombre.value}
               required
             />
             {nombre.error && nombre.touched && (
-              <p className="text-red-500">
-                ❌ El nombre no cumple con el formato requerido
+              <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest ml-2">
+                ⚠️ El nombre solo puede contener letras
               </p>
             )}
           </div>
 
-          <div className="w-full">
-            <label htmlFor="edad" className="block mb-2 text-sm font-medium text-gray-900">
-              Edad
+          <div className="space-y-2">
+            <label htmlFor="edad" className="block text-xs font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
+              Edad (años)
             </label>
             <input
               type="number"
               name="edad"
               id="edad"
               onChange={(e) => setAge(e.target.value)}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 block w-full p-2.5"
+              className="w-full bg-[#161616] border border-white/10 rounded-2xl py-3 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 focus:border-brand-cyan transition-all duration-300"
               placeholder="Edad"
               value={edad}
               min={0}
@@ -117,33 +116,36 @@ export default function PetForm({ pet }) {
             />
           </div>
 
-          <BooleanSelect label="Castrado" value={castrado} onChange={setCastrated} />
-          <BooleanSelect label="Vacunas" value={vacunas} onChange={setVaccines} />
-          <BooleanSelect label="Condición especial" value={condicion_especial} onChange={setSpecialCondition} />
-          <BooleanSelect label="Sociable" value={sociable} onChange={setSociable} />
+          <BooleanSelect label="Castrado" value={castrado} onChange={setCastrated} accent="violet" />
+          <BooleanSelect label="Vacunas" value={vacunas} onChange={setVaccines} accent="cyan" />
+          <BooleanSelect label="Condición especial" value={condicion_especial} onChange={setSpecialCondition} accent="violet" />
+          <BooleanSelect label="Sociable" value={sociable} onChange={setSociable} accent="cyan" />
         </div>
 
-        <div className="px-4">
-          <button
-            type="submit"
-            className="flex w-full justify-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-primary-200 hover:bg-primary-800"
-          >
-            Cambiar
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="w-full md:w-auto min-w-[200px] relative py-3.5 px-10 rounded-2xl overflow-hidden group/btn shadow-[0_0_20px_rgba(6,182,212,0.1)] hover:shadow-[0_0_30px_rgba(139,92,246,0.2)] transition-all duration-500"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-cyan to-brand-violet transition-transform duration-500 group-hover/btn:scale-105" />
+          <div className="relative text-white font-black text-xs tracking-[0.25em] uppercase text-center">
+            Guardar cambios
+          </div>
+        </button>
       </form>
-    </>
+    </div>
   );
 }
 
-function BooleanSelect({ label, value, onChange }) {
+function BooleanSelect({ label, value, onChange, accent }) {
+  const accentColor = accent === "cyan" ? "focus:ring-brand-cyan/20 focus:border-brand-cyan" : "focus:ring-brand-violet/20 focus:border-brand-violet";
+
   return (
-    <div>
-      <label className="block mb-2 text-sm font-medium text-gray-900">{label}</label>
+    <div className="space-y-2">
+      <label className="block text-xs font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value === "true")}
-        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+        className={`w-full bg-[#161616] border border-white/10 rounded-2xl py-3 px-5 text-white focus:outline-none focus:ring-2 transition-all duration-300 appearance-none cursor-pointer ${accentColor}`}
       >
         <option value={true}>Sí</option>
         <option value={false}>No</option>
@@ -156,4 +158,5 @@ BooleanSelect.propTypes = {
   label: PropTypes.string.isRequired,
   value: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
+  accent: PropTypes.string,
 };

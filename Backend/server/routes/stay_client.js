@@ -7,15 +7,15 @@ const router = express.Router();
 
 // Crear una nueva relación de estancia y cliente
 router.post('/create', async (req, res) => {
-  const { id_estancia, id_cliente, lista_espera } = req.body;
+  const { id_estancia, id_cliente, fecha_inicio, fecha_fin, lista_espera } = req.body;
 
 
-  if (!id_estancia || !id_cliente) {
+  if (!id_estancia || !id_cliente || !fecha_inicio || !fecha_fin) {
     return res.status(400).json({ error: 'Datos incompletos' });
   }
 
   try {
-    // Obtener cupo máximo y reservas actuales
+    // Obtener cupo máximo y reservas actuales para el bloque de estancia padre
     const [status] = await sequelize.query(`
       SELECT 
         e.cupo AS maxCupo,
@@ -39,6 +39,8 @@ router.post('/create', async (req, res) => {
     const newStayClient = await StayClient.create({
       id_estancia,
       id_cliente,
+      fecha_inicio,
+      fecha_fin,
       lista_espera: lista_espera ?? false,
     });
 
@@ -106,13 +108,15 @@ router.get('/all', async (req, res) => {
 
 // Actualizar una relación de estancia y cliente
 router.put("/edit-stay-client-reservation", async (req, res) => {
-  const { id_estancia, id_cliente, nueva_id_estancia, nueva_id_cliente, lista_espera } = req.body;
+  const { id_estancia, id_cliente, nueva_id_estancia, nueva_id_cliente, fecha_inicio, fecha_fin, lista_espera } = req.body;
 
   console.log("Datos recibidos para editar relación:", {
     id_estancia,
     id_cliente,
     nueva_id_estancia,
     nueva_id_cliente,
+    fecha_inicio,
+    fecha_fin,
     lista_espera
   });
 
@@ -140,13 +144,17 @@ router.put("/edit-stay-client-reservation", async (req, res) => {
        SET 
          id_estancia = ?, 
          id_cliente = ?, 
+         fecha_inicio = ?,
+         fecha_fin = ?,
          lista_espera = ?
        WHERE id_estancia = ? AND id_cliente = ?;`,
       {
         replacements: [
-          nueva_id_estancia ?? id_estancia,  // Si no se pasa nueva_id_estancia, mantiene el valor antiguo
-          nueva_id_cliente ?? id_cliente,    // Lo mismo con nueva_id_cliente
-          lista_espera ?? relacion[0].lista_espera,  // Si no se pasa lista_espera, mantiene el valor anterior
+          nueva_id_estancia ?? id_estancia,
+          nueva_id_cliente ?? id_cliente,
+          fecha_inicio ?? relacion[0].fecha_inicio,
+          fecha_fin ?? relacion[0].fecha_fin,
+          lista_espera ?? relacion[0].lista_espera,
           id_estancia,
           id_cliente
         ],

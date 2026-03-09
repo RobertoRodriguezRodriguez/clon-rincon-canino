@@ -13,112 +13,84 @@ export default function NavbarAdmin() {
       setToken(response);
     });
   }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  , []);
-  
-  return (
-    <nav className="bg-white shadow-lg shadow-indigo-100 fixed w-full z-20 top-0 start-0 border-b border-gray-200">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto sm:p-3 p-2">
-        <div
-          className="flex items-center space-x-3 rtl:space-x-reverse"
-        >
-          <img
-            src="/assets/HuellaPerro.webp"
-            className="h-10 sm:h-12"
-            alt="Huella Logo"
-          />
-          <span className="self-center text-xl sm:text-2xl font-semibold whitespace-nowrap">
-            RincónCanino
-          </span>
-        </div>
-        <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-          {token === null ? (
-          <button
-            type="button"
-            onClick={() => {
-              navigate("/login");
-            }}
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 sm:py-2 py-1.5 text-center"
-          >
-            Iniciar
-          </button>
-          ) : (
-          <button
-            type="button"
-            onClick={() => {
-              navigate("/profile-admin");
-            }}
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 sm:py-2 py-1.5 text-center"
-          >
-            Volver
-          </button>
-          )}
-          <button
-            data-collapse-toggle="navbar-sticky"
-            type="button"
-            onClick={() => {
-              document
-                .getElementById("navbar-sticky")
-                .classList.toggle("hidden");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    , []);
 
-              if (
-                document
-                  .getElementById("navbar-sticky")
-                  .classList.contains("hidden")
-              ) {
-                document
-                  .getElementById("navbar-sticky")
-                  .setAttribute("aria-expanded", "false");
-              } else {
-                document
-                  .getElementById("navbar-sticky")
-                  .setAttribute("aria-expanded", "true");
-              }
-            }}
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-            aria-controls="navbar-sticky"
-            aria-expanded="false"
-          >
-            <span className="sr-only">Open main menu</span>
-            <svg
-              className="w-5 h-5"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 17 14"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M1 1h15M1 7h15M1 13h15"
-              />
-            </svg>
-          </button>
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-[100] bg-[#101010]/80 backdrop-blur-xl border-b border-white/5">
+      <div className="max-w-screen-xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-4 group cursor-pointer" onClick={() => navigate("/")}>
+          <div className="relative">
+            <div className="absolute inset-0 bg-brand-cyan/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+            <img
+              src="/assets/HuellaPerro.webp"
+              className="relative h-10 w-10 object-contain brightness-110 group-hover:scale-110 transition-transform duration-500"
+              alt="Huella Logo"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-black uppercase tracking-[0.3em] text-white italic">
+              Rincón<span className="text-brand-cyan">Canino</span>
+            </span>
+            <span className="text-[8px] text-zinc-600 font-bold uppercase tracking-widest">Panel de Administración</span>
+          </div>
         </div>
-        <div
-          className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
-          id="navbar-sticky"
+
+        <div className="hidden md:flex items-center gap-8">
+          <Link
+            to="/photos"
+            className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-brand-cyan transition-colors"
+          >
+            Galería
+          </Link>
+          <Link
+            to="/calendar"
+            className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-brand-cyan transition-colors"
+          >
+            Cronograma
+          </Link>
+          <div className="h-4 w-[1px] bg-white/10" />
+          {token === null ? (
+            <button
+              onClick={() => navigate("/login")}
+              className="px-6 py-2 bg-brand-cyan text-black font-black uppercase text-[10px] tracking-widest rounded-lg hover:bg-cyan-400 transition-colors shadow-lg shadow-cyan-500/10"
+            >
+              Identificarse
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/profile-admin")}
+              className="px-6 py-2 border border-white/10 hover:border-brand-cyan/30 text-white font-black uppercase text-[10px] tracking-widest rounded-lg transition-all"
+            >
+              Dashboard
+            </button>
+          )}
+        </div>
+
+        {/* Mobile Toggle */}
+        <button
+          className="md:hidden p-2 text-zinc-500 hover:text-white"
+          onClick={() => {
+            document.getElementById("mobile-menu").classList.toggle("hidden");
+          }}
         >
-          <ul className="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white">
-            <li>
-              <Link
-                to="/photos"
-                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0"
-              >
-                Fotos
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/calendar"
-                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0"
-              >
-                Calendario
-              </Link>
-            </li>
-          </ul>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      <div id="mobile-menu" className="hidden md:hidden bg-[#161616] border-b border-white/5 p-6 animate-in fade-in slide-in-from-top-4">
+        <div className="flex flex-col gap-6">
+          <Link to="/photos" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Galería</Link>
+          <Link to="/calendar" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Cronograma</Link>
+          <button
+            onClick={() => navigate(token ? "/profile-admin" : "/login")}
+            className="w-full py-4 bg-brand-cyan text-black font-black uppercase text-[10px] tracking-widest rounded-xl"
+          >
+            {token ? "Dashboard" : "Identificarse"}
+          </button>
         </div>
       </div>
     </nav>

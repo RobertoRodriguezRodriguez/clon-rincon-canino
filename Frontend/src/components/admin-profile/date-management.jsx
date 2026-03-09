@@ -1,4 +1,4 @@
-import { InputPicker, Input } from "rsuite";
+import { InputPicker, Input, Notification, useToaster } from "rsuite";
 import React from "react";
 
 import { createClass } from "../../services/class";
@@ -19,89 +19,117 @@ const data = [
 
 export default function DateManagement() {
   const { reloadClasses } = useClassStore();
+  const toaster = useToaster();
   const [calendar, setCalendar] = React.useState("");
   const [dayPicker, setDayPicker] = React.useState("");
   const [startTime, setStartTime] = React.useState("");
   const [endTime, setEndTime] = React.useState("");
   const [places, setPlaces] = React.useState("");
 
-  // Función para obtener el nombre del día de la semana a partir de una fecha
   const getDayOfWeek = (dateString) => {
-    const daysOfWeek = [
-      "Domingo",
-      "Lunes",
-      "Martes",
-      "Miércoles",
-      "Jueves",
-      "Viernes",
-      "Sábado",
-    ];
+    const daysOfWeek = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
     const date = new Date(dateString);
     return daysOfWeek[date.getDay()];
   };
-  
-  return (
-    <>
-      <div className="px-4 pb-2">
-        <Input
-          onInput={(info) => {
-            const selectedDate = info.target.value;
-            setCalendar(selectedDate);
-            setDayPicker(getDayOfWeek(selectedDate)); // Actualiza el día automáticamente
-          }}
-          value={calendar}
-          className="px-4 w-full py-2 rounded-lg space-y-3"
-          type="date"
-        />
-      </div>
-      <div className="px-4 w-full py-1 rounded-lg space-y-3">
-        <div className="flex space-x-3">
-          <InputPicker
-            onChange={(info) => {
-              setDayPicker(info);
-              setCalendar(""); // Opcional: Vaciar el calendario si se elige manualmente el día
-            }}
-            value={dayPicker}
-            data={data}
-            style={{ width: 350 }}
-            placeholder="Día"
-          />
-          <h4>Inicio</h4>
-          <Input
-            type="time"
-            onChange={(time) => {
-              setStartTime(time);
-            }}
-          />
-          <h4>Fin</h4>
-          <Input
-            type="time"
-            onChange={(time) => {
-              setEndTime(time);
-            }}
-          />
-        </div>
-        <Input
-          placeholder="Número de plazas"
-          type="number"
-          onChange={(info) => {
-            setPlaces(info);
-          }}
-        />
 
-        <div className="py-3 text-center">
-          <button
-            type="submit"
-            onClick={async () => {
-              await createClass(calendar, dayPicker, startTime, endTime, places);
-              reloadClasses();
-            }}
-            className="inline-flex items-center text-zinc-600 hover:text-green-700 border border-zinc-600 hover:border-green-700 focus:ring-2 focus:outline-none focus:ring-zinc-400 font-medium rounded-lg text-sm px-5 py-1 text-center"
-          >
-            Guardar
-          </button>
+  const handleSave = async () => {
+    try {
+      await createClass(calendar, dayPicker, startTime, endTime, places);
+      reloadClasses();
+      toaster.push(
+        <Notification type="success" header="Clase creada exitosamente." />,
+        { placement: "topEnd" }
+      );
+      // Reset fields
+      setCalendar("");
+      setStartTime("");
+      setEndTime("");
+      setPlaces("");
+    } catch (error) {
+      toaster.push(
+        <Notification type="error" header="Error al crear la clase." />,
+        { placement: "topEnd" }
+      );
+    }
+  };
+
+  return (
+    <div className="bg-[#161616] border border-white/5 rounded-[2rem] p-8 shadow-2xl space-y-8">
+      <div className="space-y-1">
+        <h4 className="text-xs font-black uppercase tracking-[0.2em] text-brand-cyan">Creador de Clases</h4>
+        <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Establece los horarios y disponibilidad</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Fecha Exacta</label>
+            <Input
+              type="date"
+              value={calendar}
+              onChange={(value) => {
+                setCalendar(value);
+                if (value) setDayPicker(getDayOfWeek(value));
+              }}
+              className="!bg-[#1a1a1a] !border-white/10 !rounded-xl !py-4 !text-white focus:!border-brand-cyan transition-all"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Día de la Semana</label>
+            <InputPicker
+              data={data}
+              value={dayPicker}
+              onChange={setDayPicker}
+              placeholder="Seleccionar día"
+              block
+              className="custom-input-picker"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Inicio</label>
+              <Input
+                type="time"
+                value={startTime}
+                onChange={setStartTime}
+                className="!bg-[#1a1a1a] !border-white/10 !rounded-xl !py-4 !text-white focus:!border-brand-cyan transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Fin</label>
+              <Input
+                type="time"
+                value={endTime}
+                onChange={setEndTime}
+                className="!bg-[#1a1a1a] !border-white/10 !rounded-xl !py-4 !text-white focus:!border-brand-cyan transition-all"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Plazas Disponibles</label>
+            <Input
+              type="number"
+              placeholder="Ej: 10"
+              value={places}
+              onChange={setPlaces}
+              className="!bg-[#1a1a1a] !border-white/10 !rounded-xl !py-4 !text-white focus:!border-brand-cyan transition-all"
+            />
+          </div>
         </div>
       </div>
-    </>
+
+      <div className="pt-4 border-t border-white/5">
+        <button
+          onClick={handleSave}
+          className="relative w-full py-4 group/save overflow-hidden rounded-2xl transition-all duration-500"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-cyan to-brand-violet opacity-90 group-hover/save:scale-105 transition-transform duration-500" />
+          <span className="relative text-[10px] font-black uppercase tracking-[0.3em] text-white">Publicar Sesión</span>
+        </button>
+      </div>
+    </div>
   );
 }

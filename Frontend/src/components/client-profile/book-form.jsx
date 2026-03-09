@@ -42,14 +42,14 @@ export default function BookForm({ id_cliente }) {
     const response = await createPet(
       nombre,
       edad,
-      castrado === "true", 
-      vacunas === "true",   
+      castrado === "true",
+      vacunas === "true",
       condicion_especial === "true",
       id_cliente,
-      sociable === "true", 
+      sociable === "true",
 
     );
-    
+
 
     if (response) {
       toaster.push(
@@ -69,18 +69,24 @@ export default function BookForm({ id_cliente }) {
   };
 
   return (
-    <section>
-      <div className="py-8 px-4 mx-auto max-w-screen-lg lg:py-10">
-        <h2 className="mb-4 text-2xl font-bold text-gray-900">
-          Introduce la información de tu mascota
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
-            <div className="sm:col-span-2">
-              <label
-                htmlFor="name"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+    <section className="relative group max-w-2xl mx-auto">
+      {/* Decorative Accent Glow */}
+      <div className="absolute -inset-1 bg-gradient-to-r from-brand-cyan/10 to-brand-violet/10 rounded-[2.5rem] blur-xl opacity-20 pointer-events-none" />
+
+      <div className="relative bg-[#161616] border border-white/5 rounded-[2.5rem] p-8 md:p-12 shadow-2xl overflow-hidden">
+        <div className="relative z-10 text-center mb-10">
+          <h2 className="text-3xl font-black tracking-tight text-white mb-3">
+            Registra tu mascota
+          </h2>
+          <p className="text-zinc-500 font-medium tracking-wide text-sm">
+            Compártenos los detalles para empezar las aventuras
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="sm:col-span-2 space-y-2">
+              <label htmlFor="name" className="block text-xs font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
                 Nombre de tu mascota
               </label>
               <input
@@ -89,18 +95,15 @@ export default function BookForm({ id_cliente }) {
                 id="name"
                 value={nombre}
                 onChange={(e) => setPetName(e.target.value)}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                placeholder="Toby"
+                className="w-full bg-[#1e1e1e] border border-white/10 rounded-2xl py-3.5 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 focus:border-brand-cyan transition-all duration-300"
+                placeholder="Ej: Toby"
                 required
               />
             </div>
 
-            <div className="w-full">
-              <label
-                htmlFor="edad"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
-                Edad
+            <div className="space-y-2">
+              <label htmlFor="edad" className="block text-xs font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
+                Edad (años)
               </label>
               <input
                 type="number"
@@ -108,7 +111,7 @@ export default function BookForm({ id_cliente }) {
                 id="edad"
                 value={edad}
                 onChange={(e) => setAge(e.target.value)}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                className="w-full bg-[#1e1e1e] border border-white/10 rounded-2xl py-3.5 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 focus:border-brand-cyan transition-all duration-300"
                 placeholder="1"
                 min={0}
                 max={30}
@@ -116,92 +119,83 @@ export default function BookForm({ id_cliente }) {
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="castrado"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+            <div className="space-y-2">
+              <label htmlFor="castrado" className="block text-xs font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
                 Castrado
               </label>
               <select
                 id="castrado"
                 value={castrado}
                 onChange={(e) => setCastrated(e.target.value)}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
+                className="w-full bg-[#1e1e1e] border border-white/10 rounded-2xl py-3.5 px-5 text-white focus:outline-none focus:ring-2 focus:ring-brand-violet/20 focus:border-brand-violet transition-all duration-300 appearance-none cursor-pointer"
                 required
               >
-                <option value="">Selecciona una opción</option>
-                <option value="true">Sí</option>
-                <option value="false">No</option>
+                <option value="" disabled className="bg-[#1e1e1e]">Seleccionar...</option>
+                <option value="true" className="bg-[#1e1e1e]">Sí</option>
+                <option value="false" className="bg-[#1e1e1e]">No</option>
               </select>
             </div>
 
-            <div>
-              <label
-                htmlFor="vacunas"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+            <div className="space-y-2">
+              <label htmlFor="vacunas" className="block text-xs font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
                 Vacunas
               </label>
               <select
                 id="vacunas"
                 value={vacunas}
                 onChange={(e) => setVaccines(e.target.value)}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
+                className="w-full bg-[#1e1e1e] border border-white/10 rounded-2xl py-3.5 px-5 text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 focus:border-brand-cyan transition-all duration-300 appearance-none cursor-pointer"
                 required
               >
-                <option value="">Selecciona una opción</option>
-                <option value="true">Todas</option>
-                <option value="false">Ninguna</option>
+                <option value="" disabled className="bg-[#1e1e1e]">Seleccionar...</option>
+                <option value="true" className="bg-[#1e1e1e]">Al día</option>
+                <option value="false" className="bg-[#1e1e1e]">Pendientes</option>
               </select>
             </div>
 
-            <div>
-              <label
-                htmlFor="condicion_especial"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+            <div className="space-y-2">
+              <label htmlFor="condicion_especial" className="block text-xs font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
                 Condición especial
               </label>
               <select
                 id="condicion_especial"
                 value={condicion_especial}
                 onChange={(e) => setSpecialCondition(e.target.value)}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
+                className="w-full bg-[#1e1e1e] border border-white/10 rounded-2xl py-3.5 px-5 text-white focus:outline-none focus:ring-2 focus:ring-brand-violet/20 focus:border-brand-violet transition-all duration-300 appearance-none cursor-pointer"
                 required
               >
-                <option value="">Selecciona una opción</option>
-                <option value="true">Sí</option>
-                <option value="false">No</option>
+                <option value="" disabled className="bg-[#1e1e1e]">Seleccionar...</option>
+                <option value="true" className="bg-[#1e1e1e]">Sí</option>
+                <option value="false" className="bg-[#1e1e1e]">No</option>
               </select>
             </div>
 
-            <div>
-              <label
-                htmlFor="sociable"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
-                Sociable
+            <div className="space-y-2 sm:col-span-2">
+              <label htmlFor="sociable" className="block text-xs font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
+                Nivel de Sociabilidad
               </label>
               <select
                 id="sociable"
                 value={sociable}
                 onChange={(e) => setSociability(e.target.value)}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
+                className="w-full bg-[#1e1e1e] border border-white/10 rounded-2xl py-3.5 px-5 text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 focus:border-brand-cyan transition-all duration-300 appearance-none cursor-pointer"
                 required
               >
-                <option value="">Selecciona una opción</option>
-                <option value="true">Sí</option>
-                <option value="false">No</option>
+                <option value="" disabled className="bg-[#1e1e1e]">Seleccion una opción...</option>
+                <option value="true" className="bg-[#1e1e1e]">Muy sociable</option>
+                <option value="false" className="bg-[#1e1e1e]">Reservado / En entrenamiento</option>
               </select>
             </div>
           </div>
 
           <button
             type="submit"
-            className="flex w-full justify-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-primary-200 hover:bg-primary-800"
+            className="w-full relative py-4 rounded-2xl overflow-hidden group/btn shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] transition-all duration-500 mt-4"
           >
-            Registrar
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-cyan to-brand-violet transition-transform duration-500 group-hover/btn:scale-105" />
+            <div className="relative text-white font-black text-xs tracking-[0.25em] uppercase text-center">
+              REGISTRAR MASCOTA
+            </div>
           </button>
         </form>
       </div>

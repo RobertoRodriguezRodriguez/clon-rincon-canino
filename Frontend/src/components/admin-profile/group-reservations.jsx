@@ -178,226 +178,186 @@ export default function Reservations() {
 
   // console.log("reservas", groupReservations);
   // console.log("clases en group", classes);
-  
+
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-        Reservas de Clases
-      </h2>
+    <div className="space-y-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/5">
+        <div className="space-y-1">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-cyan">Gestión de Asistencia</h2>
+          <h3 className="text-3xl font-black text-white uppercase italic tracking-tight">Registro de <span className="text-zinc-500">Clases</span></h3>
+        </div>
+        <button
+          onClick={handleCreate}
+          className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-white transition-all shadow-xl hover:scale-[1.02]"
+        >
+          Nueva Inscripción
+        </button>
+      </div>
 
-      <Button
-        appearance="primary"
-        onClick={handleCreate}
-        style={{ marginBottom: "1rem" }}
-      >
-        Crear Reserva
-      </Button>
+      {/* Group Reservations Table */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 ml-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Sesiones Grupales</h4>
+        </div>
 
-      <h3 className="text-xl font-semibold text-gray-700 mb-4">
-        Reservas Grupales
-      </h3>
-      <Table data={groupReservations} height={400} hover bordered autoHeight>
-        <Column width={250} align="center">
-          <HeaderCell>Email del Cliente</HeaderCell>
-          <Cell dataKey="email_cliente" />
-        </Column>
-        <Column width={150} align="center">
-          <HeaderCell>Fecha</HeaderCell>
-          <Cell dataKey="fecha" />
-        </Column>
-        <Column width={150} align="center">
-          <HeaderCell>Hora de Inicio</HeaderCell>
-          <Cell dataKey="hora_inicio" />
-        </Column>
-        <Column width={150} align="center">
-          <HeaderCell>Hora de Fin</HeaderCell>
-          <Cell dataKey="hora_fin" />
-        </Column>
-        <Column width={260} align="center" fixed="right">
-          <HeaderCell>Acciones</HeaderCell>
-          <Cell>
-            {(rowData) => (
-              <div className="flex justify-center items-center gap-2 h-full">
-                <Button
-                  appearance="primary"
-                  size="sm"
-                  style={{ flex: "0 0 auto", marginRight: "10px" }}
-                  onClick={() => handleEdit(rowData)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  size="sm"
-                  style={{
-                    flex: "0 0 auto",
-                    backgroundColor: "red",
-                    borderColor: "red",
-                    color: "white",
-                    marginLeft: "10px",
-                  }}
-                  onClick={() => handleDelete(rowData)}
-                >
-                  Borrar
-                </Button>
-              </div>
-            )}
-          </Cell>
-        </Column>
-      </Table>
+        <div className="relative overflow-hidden bg-[#161616] border border-white/5 rounded-[2.5rem] shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent pointer-events-none" />
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/5 bg-white/[0.02]">
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Cliente</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Programación</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Ventana de Tiempo</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-right">Control</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {groupReservations.map((res, idx) => (
+                  <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-white transition-colors group-hover/row:text-brand-cyan">{res.email_cliente}</span>
+                        <span className="text-[10px] text-zinc-600 uppercase tracking-tighter">Acceso Verificado</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-xs font-medium text-zinc-300 italic">{res.fecha}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-zinc-500 uppercase">{res.hora_inicio}</span>
+                        <div className="w-4 h-[1px] bg-white/10" />
+                        <span className="text-[10px] font-black text-brand-cyan uppercase">{res.hora_fin}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2 opacity-40 group-hover/row:opacity-100 transition-opacity">
+                        <button onClick={() => handleEdit(res)} className="p-2 text-zinc-500 hover:text-brand-cyan hover:bg-brand-cyan/10 rounded-xl transition-all">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        </button>
+                        <button onClick={() => handleDelete(res)} className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-      <h3 className="text-xl font-semibold text-gray-700 mb-4 mt-6">
-        Reservas Individuales
-      </h3>
-      <Table
-        data={individualReservations}
-        height={400}
-        hover
-        bordered
-        autoHeight
-      >
-        <Column width={250} align="center">
-          <HeaderCell>Email del Cliente</HeaderCell>
-          <Cell dataKey="email_cliente" />
-        </Column>
-        <Column width={150} align="center">
-          <HeaderCell>Fecha</HeaderCell>
-          <Cell dataKey="fecha" />
-        </Column>
-        <Column width={150} align="center">
-          <HeaderCell>Hora de Inicio</HeaderCell>
-          <Cell dataKey="hora_inicio" />
-        </Column>
-        <Column width={150} align="center">
-          <HeaderCell>Hora de Fin</HeaderCell>
-          <Cell dataKey="hora_fin" />
-        </Column>
-        <Column width={260} align="center" fixed="right">
-          <HeaderCell>Acciones</HeaderCell>
-          <Cell>
-            {(rowData) => (
-              <div className="flex justify-center items-center gap-2 h-full">
-                <Button
-                  appearance="primary"
-                  size="sm"
-                  style={{ flex: "0 0 auto", marginRight: "10px" }}
-                  onClick={() => handleEdit(rowData)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  size="sm"
-                  style={{
-                    flex: "0 0 auto",
-                    backgroundColor: "red",
-                    borderColor: "red",
-                    color: "white",
-                    marginLeft: "10px",
-                  }}
-                  onClick={() => handleDelete(rowData)}
-                >
-                  Borrar
-                </Button>
-              </div>
-            )}
-          </Cell>
-        </Column>
-      </Table>
+      {/* Individual Reservations Table */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 ml-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-brand-violet shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Entrenamientos One-to-One</h4>
+        </div>
 
-      <Modal open={showModal} onClose={() => setShowModal(false)}>
-        <Modal.Header>
-          <Modal.Title>
-            {editingReservation ? "Editar Reserva" : "Crear Reserva"}
+        <div className="relative overflow-hidden bg-[#161616] border border-white/5 rounded-[2.5rem] shadow-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/5 bg-white/[0.02]">
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Cliente Especializado</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Día</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Horario Reservado</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-right">Control</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {individualReservations.map((res, idx) => (
+                  <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4 text-xs font-bold text-zinc-200 group-hover/row:text-brand-violet transition-colors">{res.email_cliente}</td>
+                    <td className="px-6 py-4 text-xs italic text-zinc-400">{res.fecha}</td>
+                    <td className="px-6 py-4">
+                      <span className="text-[10px] font-black text-brand-violet uppercase tracking-widest">{res.hora_inicio} — {res.hora_fin}</span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2 opacity-40 group-hover/row:opacity-100 transition-opacity">
+                        <button onClick={() => handleEdit(res)} className="p-2 text-zinc-500 hover:text-brand-violet hover:bg-brand-violet/10 rounded-xl transition-all"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
+                        <button onClick={() => handleDelete(res)} className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Editor Modal */}
+      <Modal open={showModal} onClose={() => setShowModal(false)} size="sm" className="custom-dark-modal">
+        <Modal.Header className="pb-4 border-b border-white/5">
+          <Modal.Title className="text-white font-black uppercase tracking-widest text-xs italic">
+            Configurar <span className="text-brand-cyan">Reserva</span>
           </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <Form fluid>
-            {/* ID Clase solo visible si no estamos editando */}
+        <Modal.Body className="py-8">
+          <Form fluid className="space-y-6">
             {!editingReservation && (
-              <Form.Group>
-                <Form.ControlLabel>Clase</Form.ControlLabel>
-                <SelectPicker
-                  data={classes.map((classItem) => ({
-                    label: `${classItem.fecha} ${classItem.hora_inicio}`, // Combinación de la fecha y hora para mostrar
-                    value: classItem.id || classItem.id_clase, // ID único de la clase
-                  }))}
-                  value={newReservation.id_clase} // ID de la clase seleccionada
-                  onChange={(value) =>
-                    setNewReservation({ ...newReservation, id_clase: value })
-                  } // Actualiza el estado con el ID de la clase seleccionada
-                  style={{ width: "100%" }}
-                />
-              </Form.Group>
+              <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Seleccionar Sesión</label>
+                  <SelectPicker
+                    data={classes.map(c => ({ label: `${c.fecha} | ${c.hora_inicio}`, value: c.id || c.id_clase }))}
+                    value={newReservation.id_clase}
+                    onChange={v => setNewReservation({ ...newReservation, id_clase: v })}
+                    block
+                    className="custom-input-picker"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Asignar Cliente</label>
+                  <SelectPicker
+                    data={filteredClients.map(c => ({ label: c.nombre_cliente, value: c.id_cliente }))}
+                    value={newReservation.id_cliente}
+                    onChange={v => setNewReservation({ ...newReservation, id_cliente: v })}
+                    block
+                    className="custom-input-picker"
+                  />
+                </div>
+              </div>
             )}
 
-            {/* Cliente solo visible si no estamos editando */}
-            {!editingReservation && (
-              <Form.Group>
-                <Form.ControlLabel>Cliente</Form.ControlLabel>
-                <SelectPicker
-                  data={filteredClients.map((client) => ({
-                    label: client.nombre_cliente, // Cambia 'nombre' por 'nombre_cliente' si es el campo que contiene el nombre
-                    value: client.id_cliente, // 'id_cliente' es el valor único
-                  }))}
-                  value={newReservation.id_cliente}
-                  onChange={(value) =>
-                    setNewReservation({ ...newReservation, id_cliente: value })
-                  }
-                  style={{ width: "100%" }}
-                />
-              </Form.Group>
-            )}
-
-            {/* Solo mostrar los campos de 'fecha', 'hora_inicio' y 'hora_fin' cuando estamos editando una reserva */}
             {editingReservation && (
-              <>
+              <div className="space-y-4">
                 <Form.Group>
-                  <Form.ControlLabel>Fecha</Form.ControlLabel>
-                  <Form.Control
-                    name="fecha"
-                    type="date"
-                    value={newReservation.fecha}
-                    onChange={(value) =>
-                      setNewReservation({ ...newReservation, fecha: value })
-                    }
-                  />
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Fecha Calendario</label>
+                  <Input type="date" value={newReservation.fecha} onChange={v => setNewReservation({ ...newReservation, fecha: v })} className="!bg-[#1a1a1a] !border-white/10 !text-white" />
                 </Form.Group>
-                <Form.Group>
-                  <Form.ControlLabel>Hora Inicio</Form.ControlLabel>
-                  <Form.Control
-                    name="hora_inicio"
-                    type="time"
-                    value={newReservation.hora_inicio}
-                    onChange={(value) =>
-                      setNewReservation({
-                        ...newReservation,
-                        hora_inicio: value,
-                      })
-                    }
-                  />
-                </Form.Group>
-                <Form.Group>
-                  <Form.ControlLabel>Hora Fin</Form.ControlLabel>
-                  <Form.Control
-                    name="hora_fin"
-                    type="time"
-                    value={newReservation.hora_fin}
-                    onChange={(value) =>
-                      setNewReservation({ ...newReservation, hora_fin: value })
-                    }
-                  />
-                </Form.Group>
-              </>
+                <div className="grid grid-cols-2 gap-4">
+                  <Form.Group>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Inicio</label>
+                    <Input type="time" value={newReservation.hora_inicio} onChange={v => setNewReservation({ ...newReservation, hora_inicio: v })} className="!bg-[#1a1a1a] !border-white/10 !text-white" />
+                  </Form.Group>
+                  <Form.Group>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Término</label>
+                    <Input type="time" value={newReservation.hora_fin} onChange={v => setNewReservation({ ...newReservation, hora_fin: v })} className="!bg-[#1a1a1a] !border-white/10 !text-white" />
+                  </Form.Group>
+                </div>
+              </div>
             )}
           </Form>
         </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={handleSave} appearance="primary">
-            Guardar
-          </Button>
-          <Button onClick={() => setShowModal(false)} appearance="subtle">
-            Cancelar
-          </Button>
+        <Modal.Footer className="pt-4 border-t border-white/5 space-y-2">
+          <button
+            onClick={handleSave}
+            className="w-full py-4 bg-brand-cyan text-black font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-cyan-400 transition-colors"
+          >
+            Confirmar Reserva
+          </button>
+          <button
+            onClick={() => setShowModal(false)}
+            className="w-full py-3 text-zinc-500 hover:text-white font-black uppercase text-[10px] tracking-widest transition-colors"
+          >
+            Descartar
+          </button>
         </Modal.Footer>
       </Modal>
     </div>

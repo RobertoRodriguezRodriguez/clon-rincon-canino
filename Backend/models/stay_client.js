@@ -14,6 +14,14 @@ const StayClient = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
+    fecha_inicio: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
+    fecha_fin: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
     lista_espera: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

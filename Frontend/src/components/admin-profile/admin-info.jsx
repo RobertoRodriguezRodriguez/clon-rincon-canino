@@ -77,127 +77,129 @@ export default function AdminInfo() {
   };
 
   return (
-    <section>
-      <div className="m-auto max-w-screen-lg pt-24 px-4">
-        <div className="flex space-x-10">
-          <h2 className="mb-2 text-xl font-semibold leading-none text-gray-900 md:text-2xl">
-            NAZARET LINARES FERRE
-          </h2>
+    <section className="relative group">
+      {/* Glow effect */}
+      <div className="absolute -inset-1 bg-gradient-to-r from-brand-cyan/10 to-brand-violet/10 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000" />
+
+      <div className="relative bg-[#161616] border border-white/5 rounded-[2.5rem] p-8 md:p-12 shadow-2xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-10">
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-cyan">
+                Administrador de Sistema
+              </h2>
+              <h3 className="text-3xl md:text-5xl font-black tracking-tight text-white uppercase italic">
+                Nazaret <span className="text-zinc-500">Linares Ferre</span>
+              </h3>
+            </div>
+
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-16 pt-8 border-t border-white/5">
+              <div className="space-y-1">
+                <dt className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">DNI de Seguridad</dt>
+                <dd className="text-lg font-bold text-zinc-200">{client.dni || "—"}</dd>
+              </div>
+              <div className="space-y-1">
+                <dt className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Email Corporativo</dt>
+                <dd className="text-lg font-bold text-zinc-200">{client.email || "—"}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="flex flex-col gap-3 min-w-[240px]">
+            <button
+              type="button"
+              onClick={() => {
+                setShowAdminForm(!showAdminForm);
+                if (showClientForm) setShowClientForm(false);
+              }}
+              className="flex items-center justify-between px-6 py-4 bg-[#1a1a1a] hover:bg-[#222] border border-white/10 rounded-2xl transition-all duration-300 group/btn"
+            >
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5 text-zinc-500 group-hover/btn:text-brand-cyan transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover/btn:text-white transition-colors">Mi Seguridad</span>
+              </div>
+              <svg className={`w-4 h-4 text-zinc-600 transition-transform duration-300 ${showAdminForm ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowClientForm(!showClientForm);
+                if (showAdminForm) setShowAdminForm(false);
+              }}
+              className="flex items-center justify-between px-6 py-4 bg-[#1a1a1a] hover:bg-[#222] border border-white/10 rounded-2xl transition-all duration-300 group/btn"
+            >
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5 text-zinc-500 group-hover/btn:text-brand-violet transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover/btn:text-white transition-colors">Ajustar Clientes</span>
+              </div>
+              <svg className={`w-4 h-4 text-zinc-600 transition-transform duration-300 ${showClientForm ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <dl className="flex items-center space-x-10 pt-6">
-          <div>
-            <dt className="mb-2 font-semibold leading-none text-gray-900">
-              DNI
-            </dt>
-            <dd className="mb-4 font-light text-gray-500 sm:mb-5">
-              {client.dni || "No disponible"}
-            </dd>
-          </div>
-          <div>
-            <dt className="mb-2 font-semibold leading-none text-gray-900">
-              Correo electrónico
-            </dt>
-            <dd className="mb-4 font-light text-gray-500 sm:mb-5">
-              {client.email || "No disponible"}
-            </dd>
-          </div>
-        </dl>
 
-        {/* Botones separados */}
-        <div className="flex flex-wrap gap-3">
-          {/* Botón para cambiar contraseña propia del admin */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowAdminForm(!showAdminForm);
-              if (showClientForm) setShowClientForm(false);
-            }}
-            className="inline-flex items-center text-zinc-600 hover:text-white border border-zinc-600 hover:bg-zinc-600 focus:ring-2 focus:outline-none focus:ring-zinc-400 font-medium rounded-lg text-sm px-5 py-0.5 text-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              className="w-5 h-5 mr-1.5 -ml-1"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-              />
-            </svg>
-            Mi contraseña
-          </button>
+        {/* Dynamic Forms Area */}
+        <div className={`grid transition-all duration-500 ease-in-out ${showAdminForm || showClientForm ? 'grid-rows-[1fr] opacity-100 mt-12' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
+          <div className="overflow-hidden">
+            <div className="pt-8 border-t border-white/5">
+              {showAdminForm && (
+                <form className="max-w-md space-y-6 animate-in fade-in slide-in-from-top-4 duration-500" onSubmit={handleAdminPasswordChange}>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-white uppercase italic">Actualizar Credenciales</h4>
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Cambia tu clave de acceso al sistema</p>
+                  </div>
 
-          {/* Botón para cambiar contraseña de un cliente */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowClientForm(!showClientForm);
-              if (showAdminForm) setShowAdminForm(false);
-            }}
-            className="inline-flex items-center text-zinc-600 hover:text-white border border-zinc-600 hover:bg-zinc-600 focus:ring-2 focus:outline-none focus:ring-zinc-400 font-medium rounded-lg text-sm px-5 py-0.5 text-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              className="w-5 h-5 mr-1.5 -ml-1"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-              />
-            </svg>
-            Contraseña de cliente
-          </button>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Nueva Contraseña</label>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        className="!bg-[#1a1a1a] !border-white/10 !rounded-xl !py-3 !text-white focus:!border-brand-cyan transition-all"
+                        value={adminPassword}
+                        onChange={setAdminPassword}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Confirmar Contraseña</label>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        className="!bg-[#1a1a1a] !border-white/10 !rounded-xl !py-3 !text-white focus:!border-brand-cyan transition-all"
+                        value={adminRepeatPassword}
+                        onChange={setAdminRepeatPassword}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="relative w-full py-3 bg-brand-cyan text-black font-black text-[10px] uppercase tracking-[0.2em] rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+                  >
+                    Actualizar Cuenta
+                  </button>
+                </form>
+              )}
+
+              {showClientForm && (
+                <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                  <ChangePasswordForm adminEmail={client.email} />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Formulario para cambiar la contraseña propia del admin */}
-      {showAdminForm && (
-        <form className="m-auto max-w-screen-lg pt-4 px-4" onSubmit={handleAdminPasswordChange}>
-          <h3 className="font-semibold text-gray-900 mb-3">Cambiar mi contraseña</h3>
-          <div className="flex flex-col space-y-3">
-            <label htmlFor="admin-password-new" className="font-semibold leading-none text-gray-900">
-              Nueva contraseña
-            </label>
-            <Input
-              type="password"
-              id="admin-password-new"
-              name="admin-password-new"
-              value={adminPassword}
-              onChange={setAdminPassword}
-            />
-          </div>
-          <div className="flex flex-col space-y-3 mt-4">
-            <label htmlFor="admin-password-repeat" className="font-semibold leading-none text-gray-900">
-              Repetir nueva contraseña
-            </label>
-            <Input
-              type="password"
-              id="admin-password-repeat"
-              name="admin-password-repeat"
-              value={adminRepeatPassword}
-              onChange={setAdminRepeatPassword}
-            />
-          </div>
-          <button
-            type="submit"
-            className="inline-flex mt-4 items-center text-zinc-600 hover:text-green-700 border border-zinc-600 hover:border-green-700 focus:ring-2 focus:outline-none focus:ring-zinc-400 font-medium rounded-lg text-sm px-5 py-0.5 text-center"
-          >
-            Guardar
-          </button>
-        </form>
-      )}
-
-      {/* Formulario para cambiar la contraseña de un cliente */}
-      {showClientForm && <ChangePasswordForm adminEmail={client.email} />}
     </section>
   );
 }

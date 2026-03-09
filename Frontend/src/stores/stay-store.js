@@ -30,13 +30,15 @@ export const useStayClientStore = create((set) => ({
   },
 
   // Crear una nueva relación estancia-cliente
-  addStayClient: async (id_estancia, id_cliente, lista_espera = false) => {
+  addStayClient: async (id_estancia, id_cliente, fecha_inicio, fecha_fin, lista_espera = false) => {
     try {
       console.log("📌 Creando estancia-cliente...");
-      console.log("Datos:", id_estancia, id_cliente, lista_espera);
+      console.log("Datos:", id_estancia, id_cliente, fecha_inicio, fecha_fin, lista_espera);
       const newEntry = await createStayClient(
         id_estancia,
         id_cliente,
+        fecha_inicio,
+        fecha_fin,
         lista_espera
       );
       console.log("✅ Estancia-cliente creada:", newEntry);
@@ -77,6 +79,8 @@ export const useStayClientStore = create((set) => ({
     id_cliente,
     nueva_id_estancia,
     nueva_id_cliente,
+    fecha_inicio,
+    fecha_fin,
     lista_espera
   ) => {
     try {
@@ -88,6 +92,8 @@ export const useStayClientStore = create((set) => ({
         id_cliente,
         nueva_id_estancia,
         nueva_id_cliente,
+        fecha_inicio,
+        fecha_fin,
         lista_espera
       );
       console.log("✅ Estancia-cliente actualizada:", updatedEntry);

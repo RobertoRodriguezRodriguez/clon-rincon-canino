@@ -19,56 +19,65 @@ export default function UserInfo({ id, name, phone, email, dni }) {
   };
 
   return (
-    <section>
-      <div className="pt-24 px-4 mx-auto max-w-screen-lg">
-        <div className="flex space-x-10 w-screen">
-          <h2 className="mb-2 text-xl font-semibold leading-none text-gray-900 md:text-2xl">
-            {name}
-          </h2>
-          <div className="flex items-center space-x-4">
-            <button
-              type="button"
-              onClick={handleShowForm}
-              className="text-zinc-600 inline-flex items-center hover:border hover:border-zinc-400 focus:ring-2 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-1 text-center"
-            >
+    <section className="relative group">
+      {/* Decorative Blur and Accent */}
+      <div className="absolute -inset-1 bg-gradient-to-r from-brand-cyan/20 to-brand-violet/20 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
+
+      <div className="relative bg-[#161616] border border-white/5 rounded-[2.5rem] p-8 md:p-10 shadow-2xl overflow-hidden">
+        {/* Subtle internal gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white">
+              {name}
+            </h2>
+            <p className="text-brand-cyan font-bold text-lg tracking-wide">
+              {phone}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleShowForm}
+            className="flex items-center space-x-2 text-zinc-400 font-bold uppercase tracking-[0.2em] text-xs hover:text-brand-cyan transition-colors group/btn"
+          >
+            <div className="p-2 bg-white/5 rounded-xl group-hover/btn:bg-brand-cyan/10 transition-colors">
               <svg
                 aria-hidden="true"
-                className="mr-1 -ml-1 w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path>
-                <path
-                  fillRule="evenodd"
-                  d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
-                  clipRule="evenodd"
-                ></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
-              Edit
-            </button>
-          </div>
+            </div>
+            <span>Editar perfil</span>
+          </button>
         </div>
-        <h3 className="mb-4 text-lg font-extrabold leading-none text-gray-900 md:text-lg">
-          {phone}
-        </h3>
-        <dl className="flex items-center space-x-10">
-          <div>
-            <dt className="mb-2 font-semibold leading-none text-gray-900">
-              DNI
+
+        <dl className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-8 mt-10 pt-10 border-t border-white/5">
+          <div className="space-y-2">
+            <dt className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">
+              Documento Identidad
             </dt>
-            <dd className="mb-4 font-light text-gray-500 sm:mb-5">{dni}</dd>
+            <dd className="text-lg font-bold text-zinc-200">{dni}</dd>
           </div>
-          <div>
-            <dt className="mb-2 font-semibold leading-none text-gray-900">
-              Correo electrónico
+          <div className="space-y-2">
+            <dt className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">
+              Dirección de correo
             </dt>
-            <dd className="mb-4 font-light text-gray-500 sm:mb-5">{email}</dd>
+            <dd className="text-lg font-bold text-zinc-200">{email}</dd>
           </div>
         </dl>
+
+        {showForm && (
+          <div className="mt-10 pt-10 border-t border-white/5 animate-in fade-in slide-in-from-top-4 duration-500">
+            <ChangeDataForm id={id} phone={phone} email={email} />
+          </div>
+        )}
       </div>
-      {showForm && <ChangeDataForm id={id} phone={phone} email={email} />}
-      
     </section>
   );
 }

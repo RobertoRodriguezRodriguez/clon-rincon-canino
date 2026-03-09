@@ -178,250 +178,245 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex flex-grow flex-col w-full min-h-screen justify-center">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <Link to={"/"}>
-          <img
-            src="/assets/HuellaPerro.webp"
-            className="mx-auto h-48 w-auto"
-            alt="Flowbite Logo"
-          />
-        </Link>
-        <h2 className="-mt-3 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          Registro
-        </h2>
-      </div>
-      <div className="mt-10 mx-4 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0a0a] relative overflow-hidden font-sans pt-10 pb-10">
+      {/* Dynamic Background Polish */}
+      <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
+
+      {/* Main Content Card with Internal Gradient */}
+      <div className="w-full max-w-lg p-10 md:p-12 rounded-[2.5rem] relative z-10 bg-[#161616] border border-white/5 shadow-2xl overflow-hidden group">
+        {/* Subtle internal gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-950/20 to-brand-violet/10 pointer-events-none" />
+
+        <div className="relative z-10 text-center mb-10">
+          <Link to="/" className="inline-block hover:scale-110 transition-transform duration-500">
+            <div className="relative">
+              <div className="absolute inset-0 bg-brand-cyan/20 blur-2xl rounded-full scale-150" />
+              <img
+                src="/assets/HuellaPerro.webp"
+                className="relative mx-auto h-28 w-auto drop-shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                alt="Huella Logo"
+              />
+            </div>
+          </Link>
+          <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">
+            Crea tu cuenta
+          </h2>
+          <p className="mt-3 text-zinc-400 font-medium tracking-wide">
+            Únete a la comunidad de Rincón Canino
+          </p>
+        </div>
+
+        <form className="relative z-10 space-y-7" onSubmit={handleSubmit}>
+          <div className="space-y-2">
             <label
               htmlFor="username"
-              className="block text-sm font-medium leading-6 text-gray-900"
+              className="block text-xs font-bold text-zinc-300 ml-2 uppercase tracking-[0.2em]"
             >
               Nombre Completo
             </label>
-            <div className="mt-2 px-3 bg-white flex w-full rounded-md border-0 py-1.5 text-gray-900 shadow-md ring-1 ring-inset ring-gray-300">
+            <div className="relative group">
               <input
                 id="username"
-                className={`w-full sm:text-sm sm:leading-6 ${
-                  nombre.hasError ? "text-red-500" : "text-black-500"
-                } placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-transparent`}
                 type="text"
+                required
                 value={nombre.value}
                 onChange={handleNombreChange}
                 onBlur={handleNombreBlur}
-                placeholder="Nombre Apellidos"
-                required
+                placeholder="Nombre y Apellidos"
+                className={`w-full bg-[#1e1e1e] border ${nombre.touched && nombre.hasError ? "border-red-500/50" : "border-brand-cyan/30"
+                  } focus:border-brand-cyan rounded-2xl py-3.5 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 transition-all duration-300 text-lg`}
               />
             </div>
             {nombre.touched && !nombre.hasError && (
-              <p className="text-green-500">
-                ✅ Campo cumplimentado correctamente
+              <p className="text-[10px] text-green-400 font-bold uppercase tracking-widest ml-2 mt-1">
+                ✅ Nombre válido
               </p>
             )}
             {nombre.touched && nombre.hasError && (
-              <p className="text-red-500">❌ Nombre Apellidos</p>
+              <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest ml-2 mt-1">
+                ❌ Formato de nombre inválido
+              </p>
             )}
           </div>
 
-          <div>
+          <div className="space-y-2">
             <label
               htmlFor="email"
-              className="block text-sm font-medium leading-6 text-gray-900"
+              className="block text-xs font-bold text-zinc-300 ml-2 uppercase tracking-[0.2em]"
             >
               Correo electrónico
             </label>
-            <div className="mt-2 px-3 bg-white flex w-full rounded-md border-0 py-1.5 text-gray-900 shadow-md ring-1 ring-inset ring-gray-300">
+            <div className="relative group">
               <input
                 id="email"
-                name="email"
                 type="email"
-                autoComplete="email"
-                placeholder="example@gmail.com"
                 required
                 value={email.value}
                 onChange={handleEmailChange}
                 onBlur={handleEmailBlur}
-                className={`w-full sm:text-sm sm:leading-6 ${
-                  email.hasError ? "text-red-500" : "text-black-500"
-                } placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-transparent`}
+                placeholder="tu@ejemplo.com"
+                className={`w-full bg-[#1e1e1e] border ${email.touched && email.hasError ? "border-red-500/50" : "border-brand-cyan/30"
+                  } focus:border-brand-cyan rounded-2xl py-3.5 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 transition-all duration-300 text-lg`}
               />
             </div>
             {email.touched && !email.hasError && (
-              <p className="text-green-500">
-                ✅ Campo cumplimentado correctamente
+              <p className="text-[10px] text-green-400 font-bold uppercase tracking-widest ml-2 mt-1">
+                ✅ Correo válido
               </p>
             )}
             {email.touched && email.hasError && (
-              <p className="text-red-500">❌ example@gmail.com</p>
+              <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest ml-2 mt-1">
+                ❌ Formato de correo inválido
+              </p>
             )}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
               <label
                 htmlFor="dni"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                className="block text-xs font-bold text-zinc-300 ml-2 uppercase tracking-[0.2em]"
               >
                 DNI / NIE
               </label>
-              <div className="mt-2 px-3 bg-white flex w-full rounded-md border-0 py-1.5 text-gray-900 shadow-md ring-1 ring-inset ring-gray-300">
+              <div className="relative group">
                 <input
                   id="dni"
-                  name="dni"
-                  type="dni"
-                  autoComplete="dni"
-                  placeholder="12345678P o X1234567A"
+                  type="text"
                   required
                   value={dni.value}
                   onChange={handleDNIChange}
                   onBlur={handleDNIBlur}
-                  className={`w-full sm:text-sm sm:leading-6 ${
-                    dni.hasError ? "text-red-500" : "text-black-500"
-                  } placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-transparent`}
+                  placeholder="12345678X"
+                  className={`w-full bg-[#1e1e1e] border ${dni.touched && dni.hasError ? "border-red-500/50" : "border-brand-violet/30"
+                    } focus:border-brand-violet rounded-2xl py-3.5 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-violet/20 transition-all duration-300 text-lg`}
                 />
               </div>
-              {dni.touched && !dni.hasError && (
-                <p className="text-green-500">
-                  ✅ Campo cumplimentado correctamente
-                </p>
-              )}
               {dni.touched && dni.hasError && (
-                <p className="text-red-500">❌ 12345678P o X1234567A</p>
+                <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest ml-2 mt-1 text-center">
+                  ❌ Formato inválido
+                </p>
               )}
             </div>
 
-            <div>
+            <div className="space-y-2">
               <label
                 htmlFor="telefono"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                className="block text-xs font-bold text-zinc-300 ml-2 uppercase tracking-[0.2em]"
               >
                 Teléfono
               </label>
-              <div className="mt-2 px-3 bg-white flex w-full rounded-md border-0 py-1.5 text-gray-900 shadow-md ring-1 ring-inset ring-gray-300">
+              <div className="relative group">
                 <input
                   id="telefono"
-                  name="telefono"
-                  type="telefono"
-                  autoComplete="telefono"
-                  placeholder="123456789"
+                  type="tel"
                   required
                   value={telefono.value}
                   onChange={handleTelefonoChange}
                   onBlur={handleTelefonoBlur}
-                  className={`w-full sm:text-sm sm:leading-6 ${
-                    telefono.hasError ? "text-red-500" : "text-black-500"
-                  } placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-transparent`}
+                  placeholder="999 999 999"
+                  className={`w-full bg-[#1e1e1e] border ${telefono.touched && telefono.hasError ? "border-red-500/50" : "border-brand-violet/30"
+                    } focus:border-brand-violet rounded-2xl py-3.5 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-violet/20 transition-all duration-300 text-lg`}
                 />
               </div>
-              {telefono.touched && !telefono.hasError && (
-                <p className="text-green-500">
-                  ✅ Campo cumplimentado correctamente
-                </p>
-              )}
               {telefono.touched && telefono.hasError && (
-                <p className="text-red-500">❌ 123456789</p>
+                <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest ml-2 mt-1 text-center">
+                  ❌ 9 dígitos
+                </p>
               )}
             </div>
           </div>
 
-          <div>
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
-                Contraseña
-              </label>
-              <div className="text-sm"></div>
-            </div>
-            <div className="mt-2 px-3 bg-white flex w-full rounded-md border-0 py-1.5 text-gray-900 shadow-md ring-1 ring-inset ring-gray-300">
+          <div className="space-y-2">
+            <label
+              htmlFor="password"
+              className="block text-xs font-bold text-zinc-300 ml-2 uppercase tracking-[0.2em]"
+            >
+              Contraseña
+            </label>
+            <div className="relative group">
               <input
                 id="password"
-                name="password"
                 type="password"
-                autoComplete="current-password"
-                placeholder="• • • • • • • •"
                 required
                 value={password.value}
                 onChange={handlePasswordChange}
                 onBlur={handlePasswordBlur}
-                minLength={1}
-                className={`w-full sm:text-sm sm:leading-6 ${
-                  password.hasError ? "text-red-500" : "text-black-500"
-                } placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-transparent`}
+                placeholder="••••••••"
+                className={`w-full bg-[#1e1e1e] border ${password.touched && password.hasError ? "border-red-500/50" : "border-brand-cyan/30"
+                  } focus:border-brand-cyan rounded-2xl py-3.5 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 transition-all duration-300 text-lg`}
               />
             </div>
-            {password.touched && !password.hasError && (
-              <p className="text-green-500">
-                ✅ Campo cumplimentado correctamente
-              </p>
-            )}
             {password.touched && password.hasError && (
-              <p className="text-red-500">
-                ❌ Debe contener entre 5 y 16 caracteres
+              <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest ml-2 mt-1">
+                ❌ Entre 5 y 16 caracteres
               </p>
             )}
           </div>
 
-          <div>
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
-                Repite contraseña
-              </label>
-              <div className="text-sm"></div>
-            </div>
-            <div className="mt-2 px-3 bg-white flex w-full rounded-md border-0 py-1.5 text-gray-900 shadow-md ring-1 ring-inset ring-gray-300">
+          <div className="space-y-2">
+            <label
+              htmlFor="password-repeat"
+              className="block text-xs font-bold text-zinc-300 ml-2 uppercase tracking-[0.2em]"
+            >
+              Repite Contraseña
+            </label>
+            <div className="relative group">
               <input
-                id="password repeat"
-                name="password repeat"
+                id="password-repeat"
                 type="password"
-                autoComplete="repeat-password"
-                placeholder="• • • • • • • •"
                 required
                 value={repeatPassword.value}
                 onChange={handleRepeatPasswordChange}
                 onBlur={handleRepeatPasswordBlur}
-                minLength={1}
-                className={`w-full sm:text-sm sm:leading-6 ${
-                  repeatPassword.hasError ? "text-red-500" : "text-black-500"
-                } placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-transparent`}
+                placeholder="••••••••"
+                className={`w-full bg-[#1e1e1e] border ${repeatPassword.touched && repeatPassword.hasError ? "border-red-500/50" : "border-brand-cyan/30"
+                  } focus:border-brand-cyan rounded-2xl py-3.5 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 transition-all duration-300 text-lg`}
               />
             </div>
-            {repeatPassword.touched && !repeatPassword.hasError && (
-              <p className="text-green-500">
-                ✅ Campo cumplimentado correctamente
-              </p>
-            )}
             {repeatPassword.touched && repeatPassword.hasError && (
-              <p className="text-red-500">
-                ❌ Debe ser la misma contraseña que en el campo anterior.
+              <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest ml-2 mt-1">
+                ❌ Las contraseñas no coinciden
               </p>
             )}
           </div>
 
-          <div>
-            <button
-              onClick={handleSubmit}
-              type="submit"
-              className="lex w-full justify-center rounded-md bg-sky-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              REGISTRAR
-            </button>
-          </div>
-        </form>
-        <p className="pt-5 pb-10 text-center text-sm text-gray-500">
-          ¿Ya tienes cuenta?{" "}
-          <Link
-            to="/login"
-            className="font-semibold leading-6 text-sky-500 hover:text-sky-200"
+          <button
+            type="submit"
+            className="w-full relative py-4 rounded-2xl overflow-hidden group/btn shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] transition-all duration-500 mt-4"
           >
-            Inicia sesión
-          </Link>
-        </p>
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-cyan to-brand-violet transition-transform duration-500 group-hover/btn:scale-105" />
+            <div className="relative text-white font-black text-lg tracking-[0.25em]">
+              REGISTRARSE
+            </div>
+          </button>
+        </form>
+
+        <div className="relative z-10 mt-12 pt-10 text-center">
+          {/* Cyan-Purple Accent Line */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] bg-gradient-to-r from-transparent via-brand-cyan to-transparent opacity-30" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[2px] bg-gradient-to-r from-transparent via-brand-violet to-transparent opacity-50 translate-x-1/2" />
+
+          <p className="text-zinc-400 font-medium tracking-wide">
+            ¿Ya tienes una cuenta?{" "}
+            <Link
+              to="/login"
+              className="inline-flex items-center ml-1 group/login"
+            >
+              <span className="font-black text-brand-cyan group-hover:text-brand-violet transition-colors uppercase tracking-widest border-b-2 border-brand-cyan/30 group-hover:border-brand-violet/50 pb-1">
+                Inicia sesión
+              </span>
+              <svg
+                className="w-4 h-4 ml-2 transform group-hover/login:translate-x-1 transition-transform text-brand-cyan group-hover/login:text-brand-violet"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

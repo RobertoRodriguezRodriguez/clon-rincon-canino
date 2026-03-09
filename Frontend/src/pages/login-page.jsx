@@ -93,99 +93,124 @@ export default function LoginPage() {
   };
 
   return (
-    <>
-      <div className="flex flex-col flex-grow w-full h-screen justify-center">
-        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <Link to={"/"} className="flex items-center space-x-3">
-            <img
-              src="/assets/HuellaPerro.webp"
-              className="mx-auto h-48 w-auto"
-              alt="Huella Logo"
-            />
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0a0a] relative overflow-hidden font-sans">
+      {/* Dynamic Background Polish - Simplified for compatibility */}
+      <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
+
+      {/* Main Content Card with Internal Gradient */}
+      <div className="w-full max-w-md p-10 md:p-12 rounded-[2.5rem] relative z-10 bg-[#161616] border border-white/5 shadow-2xl overflow-hidden group">
+        {/* Subtle internal gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-950/20 to-brand-violet/10 pointer-events-none" />
+
+        <div className="relative z-10 text-center mb-12">
+          <Link to="/" className="inline-block hover:scale-110 transition-transform duration-500">
+            <div className="relative">
+              <div className="absolute inset-0 bg-brand-cyan/20 blur-2xl rounded-full scale-150" />
+              <img
+                src="/assets/HuellaPerro.webp"
+                className="relative mx-auto h-32 w-auto drop-shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                alt="Huella Logo"
+              />
+            </div>
           </Link>
-          <h2 className="-mt-3 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-            Inicio de sesión
+          <h2 className="mt-8 text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">
+            ¡Hola de nuevo!
           </h2>
+          <p className="mt-4 text-zinc-400 font-medium tracking-wide">
+            Entra en el mundo de Rincón Canino
+          </p>
         </div>
 
-        <div className="mt-10 mx-3 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
+        <form className="relative z-10 space-y-8" onSubmit={handleSubmit}>
+          <div className="space-y-3">
+            <label
+              htmlFor="email"
+              className="block text-xs font-bold text-zinc-300 ml-2 uppercase tracking-[0.2em]"
+            >
+              Correo electrónico
+            </label>
+            <div className="relative group">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@ejemplo.com"
+                className="w-full bg-[#1e1e1e] border border-brand-cyan/30 focus:border-brand-cyan rounded-2xl py-4 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-cyan/20 transition-all duration-300 text-lg"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between ml-2">
               <label
-                htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                htmlFor="password"
+                className="block text-xs font-bold text-zinc-300 uppercase tracking-[0.2em]"
               >
-                Correo electrónico
+                Contraseña
               </label>
-              <div className="mt-2 px-3 flex w-full bg-white rounded-md border-0 py-1.5 text-gray-900 shadow-md ring-1 ring-inset ring-gray-300">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@example.com"
-                  className="w-full text-gray-900 placeholder:text-gray-500 focus:ring-1 focus:ring-inset focus:ring-transparent sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Contraseña
-                </label>
-                <div className="text-sm">
-                  <Link
-                    to="/change-password"
-                    className="font-semibold text-sky-500 hover:text-sky-200"
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </Link>
-                </div>
-              </div>
-              <div className="mt-2 bg-white px-3 flex w-full rounded-md border-0 py-1.5 text-gray-900 shadow-md ring-1 ring-inset ring-gray-300">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPasswordHash(e.target.value)}
-                  placeholder="• • • • • • • •"
-                  className="w-full text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-transparent sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                className="flex w-full justify-center rounded-md bg-sky-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-sky-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                onClick={handleSubmit}
+              <Link
+                to="/change-password"
+                className="text-xs font-bold text-brand-violet hover:text-brand-violet/80 transition-colors uppercase tracking-widest"
               >
-                INICIAR
-              </button>
+                ¿La olvidaste?
+              </Link>
             </div>
-          </form>
+            <div className="relative group">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPasswordHash(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-[#1e1e1e] border border-brand-violet/30 focus:border-brand-violet rounded-2xl py-4 px-5 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-violet/20 transition-all duration-300 text-lg"
+              />
+            </div>
+          </div>
 
-          <p className="pt-5 text-center text-sm text-gray-500">
-            ¿No tienes cuenta?{" "}
+          <button
+            type="submit"
+            className="w-full relative py-4 rounded-2xl overflow-hidden group/btn shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] transition-all duration-500"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-cyan to-brand-violet transition-transform duration-500 group-hover/btn:scale-105" />
+            <div className="relative text-white font-black text-lg tracking-[0.25em]">
+              INICIAR SESIÓN
+            </div>
+          </button>
+        </form>
+
+        <div className="relative z-10 mt-12 pt-10 text-center">
+          {/* Cyan-Purple Accent Line */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] bg-gradient-to-r from-transparent via-brand-cyan to-transparent opacity-30" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[2px] bg-gradient-to-r from-transparent via-brand-violet to-transparent opacity-50 translate-x-1/2" />
+
+          <p className="text-zinc-400 font-medium tracking-wide">
+            ¿Aún no tienes cuenta?{" "}
             <Link
               to="/sign-up"
-              className="font-semibold leading-6 text-sky-500 hover:text-sky-200"
+              className="inline-flex items-center ml-1 group/reg"
             >
-              Registro
+              <span className="font-black text-brand-cyan group-hover:text-brand-violet transition-colors uppercase tracking-widest border-b-2 border-brand-cyan/30 group-hover:border-brand-violet/50 pb-0.5">
+                Regístrate ahora
+              </span>
+              <svg
+                className="w-4 h-4 ml-2 transform group-hover/reg:translate-x-1 transition-transform text-brand-cyan group-hover/reg:text-brand-violet"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </Link>
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 }

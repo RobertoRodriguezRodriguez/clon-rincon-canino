@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { useStayClientStore } from "../../stores/stay-store";
 import { getClientsInfo } from "../../services/client";
 import { getStayAll } from "../../services/stay";
+import { formatDate } from "../client-profile/reservation/utils";
 
 const { Column, HeaderCell, Cell } = Table;
 
@@ -250,13 +251,13 @@ export default function StayClientsReservations() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{res.fecha_inicio}</span>
+                          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{formatDate(res.fecha_inicio)}</span>
                           <div className="w-4 h-[1px] bg-white/10" />
-                          <span className="text-[10px] font-black text-brand-violet uppercase tracking-widest">{res.fecha_fin}</span>
+                          <span className="text-[10px] font-black text-brand-violet uppercase tracking-widest">{formatDate(res.fecha_fin)}</span>
                         </div>
                         {stay && (
                           <span className="text-[8px] text-zinc-600 uppercase tracking-tighter mt-1 italic">
-                            Periodo: {stay.fecha_inicio} - {stay.fecha_fin}
+                            Periodo: {formatDate(stay.fecha_inicio)} - {formatDate(stay.fecha_fin)}
                           </span>
                         )}
                       </div>

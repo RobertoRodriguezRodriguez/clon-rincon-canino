@@ -182,3 +182,26 @@ export const updateStayClient = async (id_estancia, id_cliente, nueva_id_estanci
     return { error: error.message };  // Retorna el mensaje de error en caso de fallo
   }
 };
+
+export const getStayReservationsByClientName = async (clientName) => {
+  try {
+    const token = sessionStorage.getItem("token");
+    const response = await fetch(`${url}/stay_client/client/${clientName}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ?? "",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Error al obtener las estancias del cliente");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error en getStayReservationsByClientName:", error.message);
+    return []; // Devuelve un array vacío para evitar errores en el frontend
+  }
+};

@@ -9,18 +9,19 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 
 import ReservationInfo from "../components/client-profile/reservation/reservation-info";
-import IndividualClass from "../components/client-profile/reservation/individual-class";
-import GroupClass from "../components/client-profile/reservation/group-class";
+import ClientClassReservation from "../components/client-profile/client-class-reservation";
 import Stay from "../components/client-profile/reservation/stay";
 import UploadPetPhoto from "../components/client-profile/upload-photos-user";
 
 import { getPet } from "../services/pet";
 import { getClient } from "../services/client";
+import { useReservClassesStore } from "../stores/reservation-store";
 
 export default function ProfileUserPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [pet, setPet] = useState(null);
+  const { reloadReservClasses } = useReservClassesStore();
 
   useEffect(() => {
     async function fetchData() {
@@ -65,16 +66,14 @@ export default function ProfileUserPage() {
           <PetInfo pet={pet} />
         )}
 
-        {/* Reservations Section */}
         <div className="space-y-12">
           {pet?.id ? (
             <>
               <ReservationInfo id_cliente={user.id} id_pet={pet.id} />
-              <div className="space-y-12">
-                <IndividualClass id_cliente={user.id} />
-                <GroupClass id_cliente={user.id} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <ClientClassReservation onReservationSuccess={() => reloadReservClasses(user.id)} />
+                <Stay id_cliente={user.id} mascota={pet} userName={user.nombre} />
               </div>
-              <Stay id_cliente={user.id} mascota={pet} userName={user.nombre} />
             </>
           ) : (
             <div className="bg-[#161616] border border-white/5 rounded-3xl p-10 text-center shadow-xl">

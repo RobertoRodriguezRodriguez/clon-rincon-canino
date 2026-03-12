@@ -149,24 +149,31 @@ router.put("/", async (req, res) => {
 
 // Actualizar usuario
 router.put("/update", async (req, res) => {
-  const { id, telefono, email } = req.body;
-  Client.update(
-    {
-      telefono: telefono,
-      email: email,
-    },
-    {
-      where: {
-        id: id,
+  try {
+    const { id, telefono, email } = req.body;
+    const [updatedCount] = await Client.update(
+      {
+        telefono: telefono,
+        email: email,
       },
+      {
+        where: { id: id },
+      }
+    );
+
+    if (updatedCount > 0) {
+      logger.info(`Usuario con ID ${id} actualizado.`);
+      res.json({ message: "Usuario actualizado correctamente" });
+    } else {
+      logger.warn(`No se encontró usuario para actualizar con ID: ${id}`);
+      res.status(404).json({ error: "Usuario no encontrado" });
     }
-  ).then((client) => {
-    logger.info(`Usuario ${client.nombre} - ${client.dni} actualizado`);
-    res.json(client.dataValues);
-  });
+  } catch (error) {
+    logger.error(`Error al actualizar usuario con ID ${req.body.id}:`, error);
+    res.status(500).json({ error: "Error interno al actualizar el usuario" });
+  }
 });
 
-// router.js
 router.put("/change-password", async (req, res) => {
   const { email, password } = req.body; // Cambiado de req.params a req.body
 
@@ -241,59 +248,61 @@ router.delete("/delete/:id", async (req, res) => {
 });
 
 // Hacer que un usuario sea inactivo
+// Nota: Usar el método DELETE para una actualización no es una práctica REST estándar. Considera usar PUT o PATCH.
 router.delete("/:id", async (req, res) => {
-  const { id } = req.params;
-  Client.update(
-    {
-      activo: false,
-    },
-    {
-      where: {
-        id: id,
-      },
+  try {
+    const { id } = req.params;
+    const [updatedCount] = await Client.update(
+      { activo: false },
+      { where: { id: id } }
+    );
+
+    if (updatedCount > 0) {
+      logger.info(`Usuario con ID ${id} marcado como inactivo.`);
+      res.json({ message: "Usuario desactivado correctamente" });
+    } else {
+      logger.warn(`No se encontró usuario para desactivar con ID: ${id}`);
+      res.status(404).json({ error: "Usuario no encontrado" });
     }
-  ).then((client) => {
-    logger.info(`Usuario ${client.nombre} - ${client.dni} inactivo`);
-    res.json(client.dataValues);
-  });
+  } catch (error) {
+    logger.error(`Error al desactivar usuario con ID ${req.params.id}:`, error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
 });
 
 // Hacer que un usuario sea activo
 router.put("/:id", async (req, res) => {
-  const { id } = req.params;
-  Client.update(
-    {
-      activo: true,
-    },
-    {
-      where: {
-        id: id,
-      },
+  try {
+    const { id } = req.params;
+    const [updatedCount] = await Client.update(
+      { activo: true },
+      { where: { id: id } }
+    );
+
+    if (updatedCount > 0) {
+      logger.info(`Usuario con ID ${id} marcado como activo.`);
+      res.json({ message: "Usuario activado correctamente" });
+    } else {
+      logger.warn(`No se encontró usuario para activar con ID: ${id}`);
+      res.status(404).json({ error: "Usuario no encontrado" });
     }
-  ).then((client) => {
-    logger.info(`Usuario ${client.nombre} - ${client.dni} activo`);
-    res.json(client.dataValues);
-  });
+  } catch (error) {
+    logger.error(`Error al activar usuario con ID ${req.params.id}:`, error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
 });
 
 // Obtener todos los usuarios
 router.get("/all", async (req, res) => {
-  Client.findAll().then((clients) => {
+  try {
+    const clients = await Client.findAll();
     logger.info("Se muestran todos los usuarios");
     res.json(clients);
-  });
+  } catch (error) {
+    logger.error("Error al obtener todos los usuarios:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
 });
-
-// Obtener info general de los usuarios
-// router.get("/info-client", async (req, res) => {
-//   const [results, metadata] = await sequelize.query(
-//     `select distinct cliente.id as id_cliente, activo, cliente.nombre as nombre_cliente, telefono,
-//     mascota.nombre as nombre_mascota, dni, email, mascota.id as id_mascota from cliente
-//     inner join mascota on cliente.id = mascota.id_cliente;`
-//   );
-//   logger.info("Se muestran todos los usuarios con sus mascotas");
-//   res.json(results);
-// });
 
 router.get("/info-client", async (req, res) => {
   const [results, metadata] = await sequelize.query(
@@ -314,15 +323,25 @@ router.get("/info-client", async (req, res) => {
 
 // Obtener usuario por id
 router.get("/:id", async (req, res) => {
-  const { id } = req.params;
-  Client.findOne({
-    where: {
-      id: id,
-    },
-  }).then((client) => {
-    logger.info(`Usuario ${client.nombre} - ${client.dni} obtenido`);
-    res.json(client);
-  });
+  try {
+    const { id } = req.params;
+    const client = await Client.findOne({
+      where: {
+        id: id,
+      },
+    });
+
+    if (client) {
+      logger.info(`Usuario ${client.nombre} - ${client.dni} obtenido`);
+      res.json(client);
+    } else {
+      logger.warn(`No se encontró usuario con ID: ${id}`);
+      res.status(404).json({ error: "Usuario no encontrado" });
+    }
+  } catch (error) {
+    logger.error(`Error al obtener usuario con ID ${req.params.id}:`, error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
 });
 
 export default router;

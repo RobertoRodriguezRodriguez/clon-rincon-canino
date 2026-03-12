@@ -2,57 +2,105 @@ import express from "express";
 import sequelize from "../db.js";
 import { logger } from "../logger.js";
 import StayClient from "../../models/stay_client.js";
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween.js";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore.js";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter.js";
+
+dayjs.extend(isBetween);
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
 
 const router = express.Router();
 
 // Crear una nueva relación de estancia y cliente
 router.post('/create', async (req, res) => {
-  const { id_estancia, id_cliente, fecha_inicio, fecha_fin, lista_espera } = req.body;
-
+  const { id_estancia, id_cliente, fecha_inicio, fecha_fin } = req.body;
 
   if (!id_estancia || !id_cliente || !fecha_inicio || !fecha_fin) {
     return res.status(400).json({ error: 'Datos incompletos' });
   }
 
+  const userStart = dayjs(fecha_inicio);
+  const userEnd = dayjs(fecha_fin);
+
+  if (userEnd.isBefore(userStart)) {
+    return res.status(400).json({ error: "La fecha de fin no puede ser anterior a la de inicio" });
+  }
+
   try {
-    // Obtener cupo máximo y reservas actuales para el bloque de estancia padre
-    const [status] = await sequelize.query(`
-      SELECT 
-        e.cupo AS maxCupo,
-        COUNT(ec.id_cliente) AS currentBookings
-      FROM estancia e
-      LEFT JOIN estancia_cliente ec ON e.id = ec.id_estancia
-      WHERE e.id = ?
-      GROUP BY e.id;
-    `, { replacements: [id_estancia] });
+    // 1. Obtener información de la estancia (rango habilitado y cupo total)
+    const [estanciaData] = await sequelize.query(
+      `SELECT * FROM estancia WHERE id = ?`,
+      { replacements: [id_estancia] }
+    );
 
-    if (!status.length) {
-      return res.status(404).json({ error: "La estancia no existe." });
+    if (!estanciaData.length) {
+      return res.status(404).json({ error: "Estancia no encontrada" });
     }
 
-    const { maxCupo, currentBookings } = status[0];
+    const estancia = estanciaData[0];
+    const adminStart = dayjs(estancia.fecha_inicio);
+    const adminEnd = dayjs(estancia.fecha_fin);
+    const cupoMaximo = estancia.cupo;
 
-    if (currentBookings >= maxCupo) {
-      return res.status(400).json({ error: "No hay cupo disponible para esta estancia." });
+    // 2. Comprobar que el rango del usuario está dentro del habilitado por la administradora
+    if (userStart.isBefore(adminStart, 'day') || userEnd.isAfter(adminEnd, 'day')) {
+      return res.status(400).json({ 
+        error: "Las fechas seleccionadas están fuera del periodo habilitado" 
+      });
     }
 
+    // 3. Obtener todas las reservas existentes para esta estancia
+    const [reservasExistentes] = await sequelize.query(
+      `SELECT fecha_inicio, fecha_fin FROM estancia_cliente WHERE id_estancia = ?`,
+      { replacements: [id_estancia] }
+    );
+
+    // 4. Comprobación día a día
+    let diaActual = userStart;
+    while (diaActual.isSameOrBefore(userEnd, 'day')) {
+      let ocupacionDia = 0;
+
+      for (const reserva of reservasExistentes) {
+        const resInicio = dayjs(reserva.fecha_inicio);
+        const resFin = dayjs(reserva.fecha_fin);
+
+        if (diaActual.isBetween(resInicio, resFin, 'day', '[]')) {
+          ocupacionDia++;
+        }
+      }
+
+      if (ocupacionDia >= cupoMaximo) {
+        return res.status(409).json({ 
+          error: `No hay cupo disponible para el día ${diaActual.format('DD/MM/YYYY')}` 
+        });
+      }
+
+      diaActual = diaActual.add(1, 'day');
+    }
+
+    // 5. Si todos los días tienen cupo, insertamos la reserva
     const newStayClient = await StayClient.create({
       id_estancia,
       id_cliente,
       fecha_inicio,
       fecha_fin,
-      lista_espera: lista_espera ?? false,
+      lista_espera: req.body.lista_espera ?? false,
     });
 
-    console.log(`Estancia ID ${id_estancia}: Reserva creada (ocupación: ${currentBookings + 1}/${maxCupo})`);
+    logger.info(`Reserva de estancia creada para cliente ${id_cliente} del ${fecha_inicio} al ${fecha_fin}`);
 
     res.status(201).json({
       message: "Relación creada correctamente",
       data: newStayClient,
     });
   } catch (error) {
-    console.error("Error al crear la relación o actualizar cupo:", error);
-    res.status(500).json({ error: "Error al crear la relación de estancia y cliente" });
+    if (error.name === 'SequelizeUniqueConstraintError' || (error.original && error.original.code === 'ER_DUP_ENTRY')) {
+      return res.status(409).json({ error: "Este cliente ya tiene una reserva en esta estancia." });
+    }
+    logger.error("Error al crear la relación de estancia y cliente:", error);
+    res.status(500).json({ error: "Error al procesar la reserva" });
   }
 });
 
@@ -172,6 +220,33 @@ router.put("/edit-stay-client-reservation", async (req, res) => {
   }
 });
 
+// Obtener estancias por nombre de cliente
+router.get("/client/:nombre", async (req, res) => {
+  const { nombre } = req.params;
+  try {
+    const [results] = await sequelize.query(
+      `
+      SELECT 
+        ec.id_estancia,
+        ec.id_cliente,
+        ec.fecha_inicio,
+        ec.fecha_fin,
+        ec.lista_espera,
+        e.cupo
+      FROM estancia_cliente ec
+      JOIN cliente c ON ec.id_cliente = c.id
+      JOIN estancia e ON ec.id_estancia = e.id
+      WHERE c.nombre = ?
+      ORDER BY ec.fecha_inicio ASC;
+    `,
+      { replacements: [nombre] }
+    );
+    res.status(200).json(results);
+  } catch (error) {
+    logger.error(`Error al obtener estancias para el cliente ${nombre}:`, error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
 
 
 // Obtener una relación de estancia y cliente por ID de la estancia y el id del cliente

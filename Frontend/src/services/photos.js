@@ -19,7 +19,7 @@ export const getPhotosByPet = async (id) => {
 
 // Función para subir una foto
 export async function uploadPhoto(formData) {
-  return axios.post("http://localhost:3001/api/photos", formData, {
+  return axios.post(`${url}/photos`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -28,5 +28,5 @@ export async function uploadPhoto(formData) {
 
 // Función para eliminar una foto
 export const deletePhoto = async (id) => {
-  return axios.delete(`http://localhost:3001/api/photos/${id}`);
+  return axios.delete(`${url}/photos/${id}`);
 };

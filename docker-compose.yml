@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # Servicio 1: La Base de Datos (MySQL)
+  mysqldb:
+    image: mysql:8.0
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: P_rc5_bbdd
+      MYSQL_DATABASE: rincon_canino
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: P_rc5_bbdd
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./BBDD-rincon-canino/mysql-data:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_container
+    restart: always
+    depends_on:
+      - mysqldb  # Espera a que la BD arranque
+    ports:
+      - "8080:80" # Accederemos por el puerto 8080
+    environment:
+      PMA_HOST: mysqldb

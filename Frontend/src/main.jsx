@@ -5,7 +5,7 @@ import { CustomProvider } from 'rsuite';
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <CustomProvider>
+  <CustomProvider theme='dark'>
     <App />
   </CustomProvider>
 )

@@ -68,26 +68,29 @@ router.delete("/:id", async (req, res) => {
   });
 });
 
-// Mostrar mascota de un usuario
+// Obtener mascota(s) por ID de cliente
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
-  Pet.findOne({
-    where: {
-      id_cliente: id,
-    },
-  }).then((pet) => {
-    if (!pet) {
-      if (id === '1') {
-        return;
-      }
-      logger.error(`Mascota del cliente ${id} no encontrada`);
-      res.json({ error: "Mascota no encontrada" });
-      return;
-    }
-    logger.info(`Mascota del cliente ${pet.id_cliente} encontrada`);
-    res.json(pet);
-  });
+
+  try {
+    // IMPORTANTE: Usamos sequelize.query para obtener un ARRAY de resultados
+    const [results] = await sequelize.query(
+      `SELECT * FROM mascota WHERE id_cliente = ?`,
+      { replacements: [id] }
+    );
+    
+    // Devolvemos el array completo (aunque sea de 1 elemento)
+    res.status(200).json(results);
+    logger.info(`Mascotas del cliente ${id} encontradas`);
+    logger.info(results);
+  } catch (error) {
+    logger.error("Error al obtener mascotas:", error);
+    res.status(500).json({ error: "Error al obtener las mascotas" });
+  }
 });
+
+// ... resto del archivo
+
 
 // Obtener todas las mascotas con sus dueños
 router.get("/all/info", async (req, res) => {

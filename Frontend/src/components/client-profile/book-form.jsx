@@ -6,9 +6,10 @@ import { createPet } from "../../services/pet";
 
 BookForm.propTypes = {
   id_cliente: PropTypes.string.isRequired,
+  onSuccess: PropTypes.func,
 };
 
-export default function BookForm({ id_cliente }) {
+export default function BookForm({ id_cliente, onSuccess }) {
   const [nombre, setPetName] = useState("");
   const [edad, setAge] = useState("");
   const [castrado, setCastrated] = useState("");
@@ -59,7 +60,12 @@ export default function BookForm({ id_cliente }) {
         />,
         { placement: "topEnd" }
       );
-      window.location.reload();
+      
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        window.location.reload();
+      }
     } else {
       toaster.push(
         <Notification type="error" header="Error al registrar la mascota" />,

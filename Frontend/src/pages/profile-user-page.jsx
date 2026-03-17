@@ -20,7 +20,9 @@ import { useReservClassesStore } from "../stores/reservation-store";
 export default function ProfileUserPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [pet, setPet] = useState(null);
+  const [pets, setPets] = useState([]);
+  const [activePetIndex, setActivePetIndex] = useState(0);
+  const [showAddPet, setShowAddPet] = useState(false);
   const { reloadReservClasses } = useReservClassesStore();
 
   useEffect(() => {
@@ -35,7 +37,9 @@ export default function ProfileUserPage() {
           setUser(userData);
 
           const petData = await getPet(userData.id);
-          setPet(petData || {}); // Asegura que pet nunca sea undefined
+          // Manejar si la API devuelve un array o un objeto único
+          const petsList = Array.isArray(petData) ? petData : (petData && petData.id ? [petData] : []);
+          setPets(petsList);
         }
       } catch (error) {
         console.error("Error al cargar datos del cliente o mascota:", error);
@@ -48,6 +52,23 @@ export default function ProfileUserPage() {
   if (!user) {
     return <p>Cargando datos...</p>;
   }
+
+  // Función para recargar mascotas tras un nuevo registro
+  const handlePetAdded = async () => {
+    try {
+      const petData = await getPet(user.id);
+      // Aseguramos que siempre sea un array
+      const petsList = Array.isArray(petData) ? petData : (petData && petData.id ? [petData] : []);
+      setPets(petsList);
+      setShowAddPet(false);
+      // Seleccionamos la última mascota (la recién creada)
+      if (petsList.length > 0) setActivePetIndex(petsList.length - 1);
+    } catch (error) {
+      console.error("Error al actualizar lista de mascotas:", error);
+    }
+  };
+
+  const activePet = pets[activePetIndex];
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans">
@@ -62,34 +83,67 @@ export default function ProfileUserPage() {
           phone={user.telefono}
         />
 
-        {pet?.id_cliente === user.id && (
-          <PetInfo pet={pet} />
+        {/* Selector de Mascotas (Tabs) */}
+        {pets.length > 0 && (
+          <div className="flex flex-wrap items-center gap-4 border-b border-white/5 pb-4 overflow-x-auto">
+            {pets.map((p, idx) => (
+              <button
+                key={p.id || idx}
+                onClick={() => {
+                  setActivePetIndex(idx);
+                  setShowAddPet(false);
+                }}
+                className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap ${
+                  activePetIndex === idx && !showAddPet
+                    ? "bg-brand-violet text-white shadow-[0_0_20px_rgba(139,92,246,0.3)]"
+                    : "bg-[#161616] text-zinc-500 hover:text-white hover:bg-[#222]"
+                }`}
+              >
+                {p.nombre}
+              </button>
+            ))}
+            <button
+              onClick={() => setShowAddPet(true)}
+              className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap flex items-center gap-2 ${
+                showAddPet
+                  ? "bg-brand-cyan text-black shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                  : "bg-[#161616] text-zinc-500 hover:text-brand-cyan hover:bg-[#222]"
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+              Nueva Mascota
+            </button>
+          </div>
         )}
 
-        <div className="space-y-12">
-          {pet?.id ? (
-            <>
-              <ReservationInfo id_cliente={user.id} id_pet={pet.id} />
+        {/* Contenido Dinámico */}
+        {showAddPet || pets.length === 0 ? (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+             <div className="bg-[#161616] border border-white/5 rounded-3xl p-10 text-center shadow-xl">
+              <p className="text-zinc-400 font-medium mb-4">Añade un nuevo integrante a tu familia perruna.</p>
+              <BookForm id_cliente={user.id} onSuccess={handlePetAdded} />
+            </div>
+          </div>
+        ) : (
+          activePet && (
+            <div className="space-y-12 animate-in fade-in slide-in-from-left-4 duration-500" key={activePet.id}>
+              <PetInfo pet={activePet} />
+              
+              <ReservationInfo id_cliente={user.id} id_pet={activePet.id} />
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <ClientClassReservation onReservationSuccess={() => reloadReservClasses(user.id)} />
-                <Stay id_cliente={user.id} mascota={pet} userName={user.nombre} />
+                <Stay id_cliente={user.id} mascota={activePet} userName={user.nombre} />
               </div>
-            </>
-          ) : (
-            <div className="bg-[#161616] border border-white/5 rounded-3xl p-10 text-center shadow-xl">
-              <p className="text-zinc-400 font-medium">Por favor, registra una mascota para continuar.</p>
+              
+              <div className="flex flex-col items-center justify-center space-y-8 pt-8 border-t border-white/5">
+                <UploadPetPhoto petId={activePet.id} />
+              </div>
             </div>
-          )}
-        </div>
+          )
+        )}
 
-        {/* Action Section */}
-        <div className="flex flex-col items-center justify-center space-y-8 pt-8">
-          {pet?.id_cliente === user.id ? (
-            <UploadPetPhoto petId={pet.id} />
-          ) : (
-            <BookForm id_cliente={user.id} />
-          )}
-
+        <div className="flex justify-center pt-12 mt-12 border-t border-white/5">
           <button
             type="button"
             onClick={() => {

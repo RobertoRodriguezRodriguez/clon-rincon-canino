@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import ChangePasswordForm from "./change-password-form";
 import { getClient, changePassword } from "../../services/client";
-import { Notification, useToaster, Input } from "rsuite";
+import { Notification, useToaster, Input, Modal } from "rsuite";
 
 export default function AdminInfo() {
   const [showClientForm, setShowClientForm] = useState(false);
@@ -131,7 +131,6 @@ export default function AdminInfo() {
               type="button"
               onClick={() => {
                 setShowClientForm(!showClientForm);
-                if (showAdminForm) setShowAdminForm(false);
               }}
               className="flex items-center justify-between px-6 py-4 bg-[#1a1a1a] hover:bg-[#222] border border-white/10 rounded-2xl transition-all duration-300 group/btn"
             >
@@ -141,7 +140,7 @@ export default function AdminInfo() {
                 </svg>
                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover/btn:text-white transition-colors">Ajustar Clientes</span>
               </div>
-              <svg className={`w-4 h-4 text-zinc-600 transition-transform duration-300 ${showClientForm ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-zinc-600 group-hover:text-brand-violet transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
@@ -149,7 +148,7 @@ export default function AdminInfo() {
         </div>
 
         {/* Dynamic Forms Area */}
-        <div className={`grid transition-all duration-500 ease-in-out ${showAdminForm || showClientForm ? 'grid-rows-[1fr] opacity-100 mt-12' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
+        <div className={`grid transition-all duration-500 ease-in-out ${showAdminForm ? 'grid-rows-[1fr] opacity-100 mt-12' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
           <div className="overflow-hidden">
             <div className="pt-8 border-t border-white/5">
               {showAdminForm && (
@@ -161,7 +160,7 @@ export default function AdminInfo() {
 
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Nueva Contraseña</label>
+                      <label className="text-[10px] font-white uppercase tracking-widest text-zinc-600 ml-2">Nueva Contraseña</label>
                       <Input
                         type="password"
                         placeholder="••••••••"
@@ -190,15 +189,23 @@ export default function AdminInfo() {
                   </button>
                 </form>
               )}
-
-              {showClientForm && (
-                <div className="animate-in fade-in slide-in-from-top-4 duration-500">
-                  <ChangePasswordForm adminEmail={client.email} />
-                </div>
-              )}
             </div>
           </div>
         </div>
+
+        <Modal open={showClientForm} onClose={() => setShowClientForm(false)} size="sm" className="custom-dark-modal">
+          <Modal.Header className="pb-4 border-b border-white/5">
+            <Modal.Title className="text-white font-black uppercase tracking-widest text-xs italic">
+              Gestión de <span className="text-brand-violet">Credenciales</span>
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="py-8">
+            <ChangePasswordForm adminEmail={client.email} onSuccess={() => setShowClientForm(false)} />
+          </Modal.Body>
+          <Modal.Footer className="pt-4 border-t border-white/5">
+            <button onClick={() => setShowClientForm(false)} className="w-full py-3 text-zinc-500 hover:text-white font-black uppercase text-[10px] tracking-widest transition-colors">Cerrar</button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </section>
   );

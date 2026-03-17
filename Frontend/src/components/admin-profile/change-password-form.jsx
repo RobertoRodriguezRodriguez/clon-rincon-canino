@@ -3,7 +3,7 @@ import { changePassword, getClientsInfo } from "../../services/client";
 import { Notification, useToaster, SelectPicker, Input } from "rsuite";
 import PropTypes from "prop-types";
 
-export default function ChangePasswordForm({ adminEmail }) {
+export default function ChangePasswordForm({ adminEmail, onSuccess }) {
   const [clients, setClients] = useState([]);
   const [selectedClientEmail, setSelectedClientEmail] = useState(null);
   const [newPassword, setNewPassword] = useState("");
@@ -71,6 +71,7 @@ export default function ChangePasswordForm({ adminEmail }) {
       );
       setSelectedClientEmail(null);
       setNewPassword("");
+      if (onSuccess) onSuccess();
     } catch (error) {
       toaster.push(
         <Notification type="error" header={`Error: ${error.message}`} />,
@@ -80,11 +81,11 @@ export default function ChangePasswordForm({ adminEmail }) {
   };
 
   return (
-    <form className="m-auto max-w-screen-lg pt-4 px-4" onSubmit={handleSubmit}>
-      <div className="flex flex-col space-y-3">
+    <form className="space-y-6" onSubmit={handleSubmit}>
+      <div className="space-y-2">
         <label
           htmlFor="client-selector"
-          className="font-semibold leading-none text-gray-900"
+          className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"
         >
           Cliente
         </label>
@@ -95,12 +96,13 @@ export default function ChangePasswordForm({ adminEmail }) {
           value={selectedClientEmail}
           block
           placeholder="Selecciona un cliente"
+          className="custom-input-picker"
         />
       </div>
-      <div className="flex flex-col space-y-3 mt-4">
+      <div className="space-y-2">
         <label
           htmlFor="password-new"
-          className="font-semibold leading-none text-gray-900"
+          className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2"
         >
           Nueva contraseña
         </label>
@@ -110,13 +112,14 @@ export default function ChangePasswordForm({ adminEmail }) {
           name="password-new"
           value={newPassword}
           onChange={setNewPassword}
+          className="!bg-[#1a1a1a] !border-white/10 !rounded-xl !py-3 !text-white focus:!border-brand-violet transition-all"
         />
       </div>
       <button
         type="submit"
-        className="inline-flex mt-4 items-center text-zinc-600 hover:text-green-700 border border-zinc-600 hover:border-green-700 focus:ring-2 focus:outline-none focus:ring-zinc-400 font-medium rounded-lg text-sm px-5 py-0.5 text-center"
+        className="w-full py-4 bg-brand-violet text-white font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-violet-500 transition-colors shadow-lg mt-4"
       >
-        Guardar
+        Actualizar Contraseña
       </button>
     </form>
   );
@@ -124,4 +127,5 @@ export default function ChangePasswordForm({ adminEmail }) {
 
 ChangePasswordForm.propTypes = {
   adminEmail: PropTypes.string,
+  onSuccess: PropTypes.func,
 };

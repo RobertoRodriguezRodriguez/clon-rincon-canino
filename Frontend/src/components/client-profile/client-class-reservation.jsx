@@ -11,6 +11,7 @@ import {
 import PropTypes from "prop-types";
 import isBefore from "date-fns/isBefore";
 import startOfDay from "date-fns/startOfDay";
+import { format } from "date-fns";
 
 // Services
 import { getIndividualClassAvailable, getAvailableClass } from "../../services/class";
@@ -146,7 +147,7 @@ export default function ClientClassReservation({ onReservationSuccess }) {
                 {showHours ? (
                   <div className="space-y-4 pt-6 border-t border-white/5 animate-in fade-in slide-in-from-left-4 duration-500">
                     <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
-                      Horarios para el {formatDate(selectedDate)}
+                      Horarios para el {selectedDate ? format(selectedDate, "dd/MM/yyyy") : ""}
                     </label>
                     <div className="bg-[#1e1e1e]/50 rounded-2xl p-6 border border-white/5">
                       <RadioGroup
@@ -199,7 +200,7 @@ export default function ClientClassReservation({ onReservationSuccess }) {
                     setSelectedHour(""); // Reset hour selection
                   }}
                   className="custom-inline-picker"
-                  format="yyyy-MM-dd"
+                  format="dd/MM/yyyy"
                 />
               </div>
             </div>

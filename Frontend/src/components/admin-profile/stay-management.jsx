@@ -9,6 +9,7 @@ import {
 } from "rsuite";
 import { useState, useEffect } from "react";
 import { getStayAll, deleteStay, modStay } from "../../services/stay";
+import { format } from "date-fns";
 
 const { Column, HeaderCell, Cell } = Table;
 
@@ -89,10 +90,14 @@ export default function StayManagement() {
               {stays.map((stay) => (
                 <tr key={stay.id} className="group/row hover:bg-white/[0.02] transition-colors">
                   <td className="px-6 py-4">
-                    <span className="text-xs font-black uppercase tracking-widest text-brand-violet/80">{stay.fecha_inicio}</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-brand-violet/80">
+                      {format(new Date(stay.fecha_inicio), "dd/MM/yyyy")}
+                    </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-xs font-black uppercase tracking-widest text-zinc-400">{stay.fecha_fin}</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-zinc-400">
+                      {format(new Date(stay.fecha_fin), "dd/MM/yyyy")}
+                    </span>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-black text-zinc-400">

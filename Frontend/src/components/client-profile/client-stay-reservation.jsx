@@ -129,7 +129,7 @@ export default function ClientStayReservation({ onReservationSuccess }) {
               </label>
               <DateRangePicker
                 block
-                format="yyyy-MM-dd"
+                format="dd/MM/yyyy"
                 value={selectedDates}
                 onChange={setSelectedDates}
                 shouldDisableDate={(date) => {

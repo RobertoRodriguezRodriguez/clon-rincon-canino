@@ -4,8 +4,8 @@ import PropTypes from "prop-types";
 
 // import { getReservations } from "../../../services/class_client";
 import { getStayAll } from "../../../services/stay";
+import { format } from "date-fns";
 import { useReservClassesStore } from "../../../stores/reservation-store";
-import { formatDate } from "./utils";
 import { useStayClientStore } from "../../../stores/stay-store";
 
 const { Column, HeaderCell, Cell } = Table;
@@ -88,7 +88,7 @@ export default function ReservationInfo({ id_cliente, id_pet }) {
               {getData(reservations).map((res, idx) => (
                 <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
                   <td className="py-4 text-sm font-bold text-zinc-200">
-                    {formatDate(res.fecha)}
+                    {format(new Date(res.fecha), "dd/MM/yyyy")}
                   </td>
                   <td className="py-4 text-sm font-bold text-zinc-200">
                     {res.hora_inicio} - {res.hora_fin}
@@ -141,10 +141,10 @@ export default function ReservationInfo({ id_cliente, id_pet }) {
               {getData(myStayReservations).map((res, idx) => (
                 <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
                   <td className="py-4 text-sm font-bold text-zinc-200">
-                    {formatDate(res.fecha_inicio)}
+                    {format(new Date(res.fecha_inicio), "dd/MM/yyyy")}
                   </td>
                   <td className="py-4 text-sm font-bold text-zinc-200">
-                    {formatDate(res.fecha_fin)}
+                    {format(new Date(res.fecha_fin), "dd/MM/yyyy")}
                   </td>
                   <td className="py-4 text-sm font-bold text-zinc-300 text-right">
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${res.lista_espera ? 'bg-orange-500/10 text-orange-500' : 'bg-brand-violet/10 text-brand-violet'}`}>

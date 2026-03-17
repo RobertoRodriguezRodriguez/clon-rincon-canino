@@ -11,6 +11,7 @@ import {
 import { useState, useEffect } from "react";
 import { deleteClass, updateClass } from "../../services/class";
 import { useClassStore } from "../../stores/class-store";
+import { format } from "date-fns";
 
 // Función para obtener el día de la semana a partir de una fecha
 function setDay(fecha) {
@@ -114,7 +115,7 @@ export default function ClassList() {
                       className="text-xs font-bold text-zinc-400 hover:text-white transition-colors"
                       title="Copiar ID"
                     >
-                      {class_.fecha}
+                      {format(new Date(class_.fecha), "dd/MM/yyyy")}
                     </button>
                   </td>
                   <td className="px-6 py-4 text-xs font-medium text-zinc-300">

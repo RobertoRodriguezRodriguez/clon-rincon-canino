@@ -251,13 +251,17 @@ export default function StayClientsReservations() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{formatDate(res.fecha_inicio)}</span>
+                          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                            {format(new Date(res.fecha_inicio), "dd/MM/yyyy")}
+                          </span>
                           <div className="w-4 h-[1px] bg-white/10" />
-                          <span className="text-[10px] font-black text-brand-violet uppercase tracking-widest">{formatDate(res.fecha_fin)}</span>
+                          <span className="text-[10px] font-black text-brand-violet uppercase tracking-widest">
+                            {format(new Date(res.fecha_fin), "dd/MM/yyyy")}
+                          </span>
                         </div>
                         {stay && (
                           <span className="text-[8px] text-zinc-600 uppercase tracking-tighter mt-1 italic">
-                            Periodo: {formatDate(stay.fecha_inicio)} - {formatDate(stay.fecha_fin)}
+                            Periodo: {format(new Date(stay.fecha_inicio), "dd/MM/yyyy")} - {format(new Date(stay.fecha_fin), "dd/MM/yyyy")}
                           </span>
                         )}
                       </div>
@@ -305,7 +309,7 @@ export default function StayClientsReservations() {
                 <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Seleccionar Periodo (Entrada/Salida)</label>
                 <DateRangePicker
                   block
-                  format="yyyy-MM-dd"
+                  format="dd/MM/yyyy"
                   value={
                     newReservation.fecha_inicio && !isNaN(new Date(newReservation.fecha_inicio).getTime())
                       ? [new Date(newReservation.fecha_inicio), new Date(newReservation.fecha_fin)]

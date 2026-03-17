@@ -11,6 +11,7 @@ import {
 import { useClassStore } from "../../stores/class-store";
 import { editReservation } from "../../services/class_client";
 import { getClientsInfo } from "../../services/client";
+import { format } from "date-fns";
 
 const { Column, HeaderCell, Cell } = Table;
 
@@ -224,7 +225,9 @@ export default function Reservations() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-xs font-medium text-zinc-300 italic">{res.fecha}</span>
+                      <span className="text-xs font-medium text-zinc-300 italic">
+                        {format(new Date(res.fecha), "dd/MM/yyyy")}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -270,7 +273,9 @@ export default function Reservations() {
                 {individualReservations.map((res, idx) => (
                   <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4 text-xs font-bold text-zinc-200 group-hover/row:text-brand-violet transition-colors">{res.email_cliente}</td>
-                    <td className="px-6 py-4 text-xs italic text-zinc-400">{res.fecha}</td>
+                    <td className="px-6 py-4 text-xs italic text-zinc-400">
+                      {format(new Date(res.fecha), "dd/MM/yyyy")}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="text-[10px] font-black text-brand-violet uppercase tracking-widest">{res.hora_inicio} — {res.hora_fin}</span>
                     </td>
@@ -301,7 +306,10 @@ export default function Reservations() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Seleccionar Sesión</label>
                   <SelectPicker
-                    data={classes.map(c => ({ label: `${c.fecha} | ${c.hora_inicio}`, value: c.id || c.id_clase }))}
+                    data={classes.map(c => ({
+                      label: `${format(new Date(c.fecha), "dd/MM/yyyy")} | ${c.hora_inicio}`,
+                      value: c.id || c.id_clase,
+                    }))}
                     value={newReservation.id_clase}
                     onChange={v => setNewReservation({ ...newReservation, id_clase: v })}
                     block

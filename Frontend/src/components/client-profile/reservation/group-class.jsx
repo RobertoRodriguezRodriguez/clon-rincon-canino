@@ -1,4 +1,4 @@
-import { DatePicker, Radio, RadioGroup, Form, Notification, useToaster, CustomProvider } from "rsuite";
+import { DatePicker, Radio, RadioGroup, Form, Notification, useToaster, CustomProvider, SelectPicker } from "rsuite";
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import "./reservation.css";
@@ -11,6 +11,7 @@ import { useReservClassesStore } from "../../../stores/reservation-store";
 
 import { getAvailableClass } from "../../../services/class";
 import { createReservation } from "../../../services/class_client";
+import { getPet } from "../../../services/pet";
 
 GroupClass.propTypes = {
   id_cliente: PropTypes.string.isRequired,
@@ -21,6 +22,8 @@ export default function GroupClass({ id_cliente }) {
   const [groupClassDate, setGroupClassDate] = useState("");
   const [showGroupHours, setShowGroupHours] = useState(false);
   const [selectedHour, setSelectedHour] = useState("");
+  const [pets, setPets] = useState([]);
+  const [selectedPet, setSelectedPet] = useState(null);
 
   const { reloadReservClasses } = useReservClassesStore();
 
@@ -28,7 +31,16 @@ export default function GroupClass({ id_cliente }) {
     getAvailableClass().then((clases) => {
       setClasesGroup(clases.clasesDisponiblesGrupal || []);
     });
-  }, []);
+
+    if (id_cliente) {
+      getPet(id_cliente).then((petsData) => {
+        setPets(petsData || []);
+        if (petsData?.length === 1) {
+          setSelectedPet(petsData[0].id);
+        }
+      });
+    }
+  }, [id_cliente]);
 
   const abledDatesGroup = getDates(clasesGroup);
   console.log("Fechas disponibles para selección:", abledDatesGroup);
@@ -43,12 +55,20 @@ export default function GroupClass({ id_cliente }) {
       return;
     }
 
+    if (!selectedPet) {
+      toaster.push(
+        <Notification type="error" header="Por favor, selecciona una mascota" />,
+        { placement: "topEnd" }
+      );
+      return;
+    }
+
     const reservationId = getReservation(clasesGroup, groupClassDate, selectedHour);
     console.log("Reservation ID:", reservationId);
 
 
     try {
-      await createReservation(reservationId, id_cliente);
+      await createReservation(reservationId, selectedPet);
 
       const updatedClases = await getAvailableClass();
       setClasesGroup(updatedClases.clasesDisponiblesGrupal || []);
@@ -128,6 +148,21 @@ export default function GroupClass({ id_cliente }) {
                     <p className="text-zinc-600 text-sm font-medium">Selecciona un día en el calendario de la derecha</p>
                   </div>
                 )}
+
+                <div className="space-y-4 pt-6 border-t border-white/5">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
+                    Paso 2: ¿Quién entrena hoy?
+                  </label>
+                  <SelectPicker
+                    block
+                    data={pets.map(p => ({ label: p.nombre, value: p.id }))}
+                    value={selectedPet}
+                    onChange={setSelectedPet}
+                    placeholder="Elige tu mascota"
+                    className="custom-input-picker"
+                    searchable={false}
+                  />
+                </div>
               </div>
 
               <button
@@ -145,7 +180,7 @@ export default function GroupClass({ id_cliente }) {
             {/* Right Column: Calendar */}
             <div className="space-y-4">
               <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-brand-violet ml-2 text-right">
-                Paso 2: Calendario
+                Paso 3: Calendario
               </label>
               <div className="bg-[#1e1e1e] border border-white/10 rounded-[2.5rem] p-4 shadow-2xl">
                 <DatePicker

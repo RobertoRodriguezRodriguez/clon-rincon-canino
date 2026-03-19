@@ -29,7 +29,7 @@ export const getStayClients = async () => {
   }
 };
 
-export const createStayClient = async (id_estancia, id_cliente, fecha_inicio, fecha_fin, lista_espera = false) => {
+export const createStayClient = async (id_estancia, id_mascota, fecha_inicio, fecha_fin, lista_espera = false) => {
   try {
     const token = sessionStorage.getItem("token");
 
@@ -39,7 +39,7 @@ export const createStayClient = async (id_estancia, id_cliente, fecha_inicio, fe
         "Content-Type": "application/json",
         Authorization: token ?? "",
       },
-      body: JSON.stringify({ id_estancia, id_cliente, fecha_inicio, fecha_fin, lista_espera }),
+      body: JSON.stringify({ id_estancia, id_mascota, fecha_inicio, fecha_fin, lista_espera }),
     });
 
     if (!response.ok) {
@@ -58,11 +58,11 @@ export const createStayClient = async (id_estancia, id_cliente, fecha_inicio, fe
   }
 };
 
-export const getStayClientById = async (id_estancia, id_cliente) => {
+export const getStayClientById = async (id_estancia, id_mascota) => {
   try {
     const token = sessionStorage.getItem("token");
 
-    const response = await fetch(`${url}/stay_client/${id_estancia}/${id_cliente}`, {
+    const response = await fetch(`${url}/stay_client/${id_estancia}/${id_mascota}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -86,7 +86,7 @@ export const getStayClientById = async (id_estancia, id_cliente) => {
   }
 };
 
-export const deleteStayClient = async (id_estancia, id_cliente) => {
+export const deleteStayClient = async (id_estancia, id_mascota) => {
   try {
     const token = sessionStorage.getItem("token");
 
@@ -96,7 +96,7 @@ export const deleteStayClient = async (id_estancia, id_cliente) => {
         "Content-Type": "application/json",
         Authorization: token ?? "",
       },
-      body: JSON.stringify({ id_estancia, id_cliente }),
+      body: JSON.stringify({ id_estancia, id_mascota }),
     });
 
     if (!response.ok) {
@@ -143,10 +143,10 @@ export const getStayClientAll = async () => {
   }
 };
 
-export const updateStayClient = async (id_estancia, id_cliente, nueva_id_estancia, nueva_id_cliente, fecha_inicio, fecha_fin, lista_espera) => {
+export const updateStayClient = async (id_estancia, id_mascota, nueva_id_estancia, nueva_id_mascota, fecha_inicio, fecha_fin, lista_espera) => {
   try {
     const token = sessionStorage.getItem("token");
-    console.log('Datos enviados: ', id_estancia, id_cliente, nueva_id_estancia, nueva_id_cliente, fecha_inicio, fecha_fin, lista_espera);
+    console.log('Datos enviados: ', id_estancia, id_mascota, nueva_id_estancia, nueva_id_mascota, fecha_inicio, fecha_fin, lista_espera);
 
     // Hacemos la solicitud PUT al endpoint correspondiente
     const response = await fetch(`${url}/stay_client/edit-stay-client-reservation`, {
@@ -157,9 +157,9 @@ export const updateStayClient = async (id_estancia, id_cliente, nueva_id_estanci
       },
       body: JSON.stringify({
         id_estancia,
-        id_cliente,
+        id_mascota,
         nueva_id_estancia,  // Enviamos nueva_id_estancia
-        nueva_id_cliente,   // Enviamos nueva_id_cliente
+        nueva_id_mascota,   // Enviamos nueva_id_mascota
         fecha_inicio,       // Enviamos fecha_inicio
         fecha_fin,          // Enviamos fecha_fin
         lista_espera        // Enviamos lista_espera

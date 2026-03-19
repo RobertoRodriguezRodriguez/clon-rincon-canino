@@ -1,17 +1,17 @@
 import sequelize from "../server/db.js"
 import { DataTypes } from "sequelize";
 
-const ClassClient = sequelize.define( "clase_cliente",
+const ClassClient = sequelize.define( "mascota_clase",
   {
-    id_clase: {
-      type: DataTypes.UUID,
+    id_mascota: {
+      type: DataTypes.STRING(255),
       primaryKey: true,
       allowNull: false,
     },
-    id_cliente: {
-      type: DataTypes.UUID,
+    id_clase: {
+      type: DataTypes.STRING(255),
       primaryKey: true,
-      allowNull: true,
+      allowNull: false,
     },
   },
   {

@@ -176,10 +176,10 @@ export default function PetsInfo() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1.5">
-                      {pet.castrado && <span className="px-2 py-0.5 bg-brand-cyan/10 text-brand-cyan text-[8px] font-black uppercase rounded">Castrado</span>}
-                      {pet.vacunas && <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase rounded">Vacunado</span>}
-                      {pet.sociable && <span className="px-2 py-0.5 bg-violet-500/10 text-violet-400 text-[8px] font-black uppercase rounded">Sociable</span>}
-                      {pet.condicion_especial && <span className="px-2 py-0.5 bg-red-500/10 text-red-400 text-[8px] font-black uppercase rounded">C. Especial</span>}
+                      {pet.castrado ? <span className="px-2 py-0.5 bg-brand-cyan/10 text-brand-cyan text-[8px] font-black uppercase rounded">Castrado</span> : ""}
+                      {pet.vacunas ? <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase rounded">Vacunado</span> : ""}
+                      {pet.sociable ? <span className="px-2 py-0.5 bg-violet-500/10 text-violet-400 text-[8px] font-black uppercase rounded">Sociable</span> : ""}
+                      {pet.condicion_especial ? <span className="px-2 py-0.5 bg-red-500/10 text-red-400 text-[8px] font-black uppercase rounded">C. Especial</span> : ""}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-500">

@@ -106,17 +106,19 @@ router.get("/all", async (req, res) => {
     const [results] = await sequelize.query(`
       SELECT 
         c.id AS id_clase, 
-        cli.nombre, 
+        m.nombre AS nombre_mascota,
+        cli.nombre AS nombre_cliente,
         c.fecha, 
         c.hora_inicio, 
         c.hora_fin, 
         c.cupo AS cupo_original,
         (c.cupo - IFNULL(sub.total, 0)) AS cupo
       FROM clase c
-      LEFT JOIN clase_cliente cc ON c.id = cc.id_clase 
-      LEFT JOIN cliente cli ON cli.id = cc.id_cliente
+      LEFT JOIN mascota_clase mc ON c.id = mc.id_clase 
+      LEFT JOIN mascota m ON m.id = mc.id_mascota
+      LEFT JOIN cliente cli ON cli.id = m.id_cliente
       LEFT JOIN (
-        SELECT id_clase, COUNT(*) AS total FROM clase_cliente GROUP BY id_clase
+        SELECT id_clase, COUNT(*) AS total FROM mascota_clase GROUP BY id_clase
       ) sub ON c.id = sub.id_clase;
     `);
 
@@ -156,9 +158,9 @@ router.get("/available", async (req, res) => {
   try {
     const [results] = await sequelize.query(`
       SELECT c.*, 
-      (c.cupo - COUNT(cc.id_cliente)) AS cupo_disponible
+      (c.cupo - COUNT(mc.id_mascota)) AS cupo_disponible
       FROM clase c
-      LEFT JOIN clase_cliente cc ON c.id = cc.id_clase
+      LEFT JOIN mascota_clase mc ON c.id = mc.id_clase
       GROUP BY c.id
       HAVING cupo_disponible > 0;
     `);
@@ -197,13 +199,16 @@ router.get("/individual", async (req, res) => {
         c.fecha,
         c.hora_inicio,
         c.hora_fin,
+        m.id AS id_mascota,
+        m.nombre AS nombre_mascota,
         cli.id AS id_cliente,
         cli.nombre AS nombre_cliente,
         cli.email AS email_cliente,
         (c.cupo - 1) AS cupo_restante
       FROM clase c
-      INNER JOIN clase_cliente cc ON c.id = cc.id_clase
-      INNER JOIN cliente cli ON cli.id = cc.id_cliente
+      INNER JOIN mascota_clase mc ON c.id = mc.id_clase
+      INNER JOIN mascota m ON m.id = mc.id_mascota
+      INNER JOIN cliente cli ON cli.id = m.id_cliente
       WHERE c.cupo = 1
       ORDER BY c.fecha ASC;
     `);
@@ -231,9 +236,9 @@ router.get("/individual/available", async (req, res) => {
     const [results] = await sequelize.query(`
       SELECT c.*, (c.cupo - 0) AS cupo_actual
       FROM clase c
-      LEFT JOIN clase_cliente cc ON c.id = cc.id_clase
+      LEFT JOIN mascota_clase mc ON c.id = mc.id_clase
       WHERE c.cupo > 0
-        AND cc.id_clase IS NULL
+        AND mc.id_clase IS NULL
       ORDER BY c.fecha ASC;
     `);
 
@@ -265,10 +270,11 @@ router.get("/filter/:nombre", async (req, res) => {
         clase.cupo AS cupo_original,
         (clase.cupo - IFNULL(sub.total, 0)) AS cupo
       FROM clase
-      INNER JOIN clase_cliente ON clase.id = clase_cliente.id_clase
-      INNER JOIN cliente ON cliente.id = clase_cliente.id_cliente
+      INNER JOIN mascota_clase ON clase.id = mascota_clase.id_clase
+      INNER JOIN mascota ON mascota.id = mascota_clase.id_mascota
+      INNER JOIN cliente ON cliente.id = mascota.id_cliente
       LEFT JOIN (
-        SELECT id_clase, COUNT(*) AS total FROM clase_cliente GROUP BY id_clase
+        SELECT id_clase, COUNT(*) AS total FROM mascota_clase GROUP BY id_clase
       ) sub ON clase.id = sub.id_clase
       WHERE cliente.nombre = :nombre
       ORDER BY clase.fecha ASC;
@@ -300,14 +306,17 @@ router.get("/:id", async (req, res) => {
         c.hora_fin,
         c.cupo AS cupo_original,
         (c.cupo - IFNULL(sub.total, 0)) AS cupo,
+        m.id AS id_mascota,
+        m.nombre AS nombre_mascota,
         cli.id AS id_cliente,
         cli.nombre AS nombre_cliente,
         cli.email AS email_cliente
       FROM clase c
-      INNER JOIN clase_cliente cc ON c.id = cc.id_clase
-      INNER JOIN cliente cli ON cli.id = cc.id_cliente
+      INNER JOIN mascota_clase mc ON c.id = mc.id_clase
+      INNER JOIN mascota m ON m.id = mc.id_mascota
+      INNER JOIN cliente cli ON cli.id = m.id_cliente
       LEFT JOIN (
-        SELECT id_clase, COUNT(*) AS total FROM clase_cliente GROUP BY id_clase
+        SELECT id_clase, COUNT(*) AS total FROM mascota_clase GROUP BY id_clase
       ) sub ON c.id = sub.id_clase
       WHERE cli.id = ?
       ORDER BY c.fecha ASC;
@@ -329,7 +338,7 @@ router.get("/", async (req, res) => {
       SELECT c.*, (c.cupo - IFNULL(sub.total, 0)) AS cupo_actual
       FROM clase c
       LEFT JOIN (
-        SELECT id_clase, COUNT(*) AS total FROM clase_cliente GROUP BY id_clase
+        SELECT id_clase, COUNT(*) AS total FROM mascota_clase GROUP BY id_clase
       ) sub ON c.id = sub.id_clase;
     `);
 
@@ -354,7 +363,7 @@ router.delete("/:id", async (req, res) => {
   }
 
   const [results] = await sequelize.query(`
-    SELECT * FROM clase_cliente WHERE id_clase = '${id}';
+    SELECT * FROM mascota_clase WHERE id_clase = '${id}';
   `);
 
   if (results.length > 0) {

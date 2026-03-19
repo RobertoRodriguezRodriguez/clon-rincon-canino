@@ -40,9 +40,14 @@ export default function ReservationInfo({ id_cliente, id_pet }) {
     fetchStays();
   }, [id_cliente, id_pet, loadStayClients, reloadReservClasses]);
 
-  // Filtrar las reservas de estancia de este cliente específico
+  // Filtrar las reservas de estancia de esta mascota específica
   const myStayReservations = stayClients.filter(
-    (sc) => String(sc.id_cliente) === String(id_cliente)
+    (sc) => String(sc.id_mascota) === String(id_pet)
+  );
+
+  // Filtrar las reservas de clases de esta mascota específica
+  const myClassReservations = reservations.filter(
+    (res) => String(res.id_mascota) === String(id_pet)
   );
 
   const getData = (data) => {
@@ -85,7 +90,7 @@ export default function ReservationInfo({ id_cliente, id_pet }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {getData(reservations).map((res, idx) => (
+              {getData(myClassReservations).map((res, idx) => (
                 <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
                   <td className="py-4 text-sm font-bold text-zinc-200">
                     {format(new Date(res.fecha), "dd/MM/yyyy")}
@@ -103,7 +108,7 @@ export default function ReservationInfo({ id_cliente, id_pet }) {
                   </td>
                 </tr>
               ))}
-              {reservations.length === 0 && (
+              {myClassReservations.length === 0 && (
                 <tr>
                   <td colSpan="3" className="py-8 text-center text-zinc-600 font-bold uppercase tracking-widest text-xs italic">
                     Sin clases próximas

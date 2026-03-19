@@ -2,43 +2,42 @@ const url = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 import axios from 'axios';
 
 // Crear una reserva
-export async function createReservation(id_clase, id_cliente) {
+export async function createReservation(id_clase, id_mascota) {
   try {
-    const token = await fetch(`${url}/class_client`, {
+    const response = await fetch(`${url}/class_client`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         id_clase,
-        id_cliente,
+        id_mascota,
       }),
     });
 
-    if (!token.ok) {
-      throw new Error("401");
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Error al crear la reserva");
     }
 
-    const tokenJSON = await token.json();
-
-    if (tokenJSON.error) {
-      throw new Error(tokenJSON.error);
-    }
+    return data;
   } catch (error) {
-    console.log(error);
+    console.error("Error en createReservation:", error.message);
+    throw error;
   }
 }
 
 // Editar una reserva existente
 
-export async function editReservation(id_clase, id_cliente, nueva_fecha, nueva_hora_inicio, nueva_hora_fin) {
+export async function editReservation(id_clase, id_mascota, nueva_fecha, nueva_hora_inicio, nueva_hora_fin) {
   try {
     const response = await fetch(`${url}/class_client/edit-reservation`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id_clase,
-        id_cliente,
+        id_mascota,
         nueva_fecha,
         nueva_hora_inicio,
         nueva_hora_fin,
@@ -70,7 +69,7 @@ export async function editReservation(id_clase, id_cliente, nueva_fecha, nueva_h
 
 // Eliminar una reserva
 // Ajusta la firma de la función para aceptar ambos parámetros
-export async function deleteReservation(id_clase, id_cliente) {
+export async function deleteReservation(id_clase, id_mascota) {
   try {
     const token = await fetch(`${url}/class_client`, {
       method: "DELETE",
@@ -79,7 +78,7 @@ export async function deleteReservation(id_clase, id_cliente) {
       },
       body: JSON.stringify({
         id_clase,
-        id_cliente,
+        id_mascota,
       }),
     });
 
@@ -126,8 +125,7 @@ export async function getReservations(id) {
 // Obtener todas las reservas grupales realizadas por clientes
 export async function getGroupReservations() {
   try {
-    const response = await axios.get('/api/class_client/group-reservations');
-    // console.log("Respuesta completa del backend:", response.data); // Depuración
+    const response = await axios.get(`${url}/class_client/group-reservations`);
     return response.data;
   } catch (error) {
     console.error("Error en getGroupReservations:", error);

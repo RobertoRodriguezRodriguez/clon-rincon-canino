@@ -1,9 +1,10 @@
-import { DatePicker, Radio, RadioGroup, Form, Notification, useToaster, CustomProvider } from "rsuite";
+import { DatePicker, Radio, RadioGroup, Form, Notification, useToaster, CustomProvider, SelectPicker } from "rsuite";
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import "./reservation.css";
 import { getIndividualClassAvailable } from "../../../services/class"; // ✅ Cambio aquí: Ahora usamos la API correcta
 import { createReservation } from "../../../services/class_client";
+import { getPet } from "../../../services/pet";
 
 import isBefore from "date-fns/isBefore";
 
@@ -20,6 +21,8 @@ export default function IndividualClass({ id_cliente }) {
   const [individualClassDate, setIndividualClassDate] = useState("");
   const [showIndividualHours, setShowIndividualHours] = useState(false);
   const [selectedHour, setSelectedHour] = useState("");
+  const [pets, setPets] = useState([]);
+  const [selectedPet, setSelectedPet] = useState(null);
 
   const { reloadReservClasses } = useReservClassesStore();
   const toaster = useToaster();
@@ -29,7 +32,16 @@ export default function IndividualClass({ id_cliente }) {
     getIndividualClassAvailable().then((clases) => {
       setClasesIndividual(clases || []); // ✅ Manejo seguro de datos, evita errores si `clases` es undefined
     });
-  }, []);
+
+    if (id_cliente) {
+      getPet(id_cliente).then((petsData) => {
+        setPets(petsData || []);
+        if (petsData?.length === 1) {
+          setSelectedPet(petsData[0].id);
+        }
+      });
+    }
+  }, [id_cliente]);
 
   const abledDatesIndividual = getDates(clasesIndividual);
 
@@ -37,6 +49,14 @@ export default function IndividualClass({ id_cliente }) {
     if (!individualClassDate || !selectedHour) {
       toaster.push(
         <Notification type="error" header="Por favor, selecciona una fecha y una hora" />,
+        { placement: "topEnd" }
+      );
+      return;
+    }
+
+    if (!selectedPet) {
+      toaster.push(
+        <Notification type="error" header="Por favor, selecciona una mascota" />,
         { placement: "topEnd" }
       );
       return;
@@ -50,7 +70,7 @@ export default function IndividualClass({ id_cliente }) {
     );
 
     try {
-      await createReservation(reservationId, id_cliente);
+      await createReservation(reservationId, selectedPet);
 
       // Re-cargar clases individuales disponibles
       const updatedClases = await getIndividualClassAvailable();
@@ -131,6 +151,21 @@ export default function IndividualClass({ id_cliente }) {
                     <p className="text-zinc-600 text-sm font-medium">Selecciona un día en el calendario de la derecha</p>
                   </div>
                 )}
+
+                <div className="space-y-4 pt-6 border-t border-white/5">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">
+                    Paso 2: ¿Quién entrena hoy?
+                  </label>
+                  <SelectPicker
+                    block
+                    data={pets.map(p => ({ label: p.nombre, value: p.id }))}
+                    value={selectedPet}
+                    onChange={setSelectedPet}
+                    placeholder="Elige tu mascota"
+                    className="custom-input-picker"
+                    searchable={false}
+                  />
+                </div>
               </div>
 
               <button
@@ -148,7 +183,7 @@ export default function IndividualClass({ id_cliente }) {
             {/* Right Column: Calendar */}
             <div className="space-y-4">
               <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-brand-cyan ml-2 text-right">
-                Paso 2: Calendario
+                Paso 3: Calendario
               </label>
               <div className="bg-[#1e1e1e] border border-white/10 rounded-[2.5rem] p-4 shadow-2xl">
                 <DatePicker

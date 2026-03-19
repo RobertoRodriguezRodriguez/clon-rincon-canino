@@ -19,8 +19,21 @@ export default function UserManagement() {
 
   const toaster = useToaster();
 
-  // Filtrar los clientes por nombre y ordenar los activos primero.
-  const filteredClients = clients
+  // Agrupar clientes por ID para combinar mascotas en un array
+  const groupedClients = Object.values(
+    clients.reduce((acc, client) => {
+      if (!acc[client.id_cliente]) {
+        acc[client.id_cliente] = { ...client, mascotas: [] };
+      }
+      if (client.nombre_mascota && !acc[client.id_cliente].mascotas.includes(client.nombre_mascota)) {
+        acc[client.id_cliente].mascotas.push(client.nombre_mascota);
+      }
+      return acc;
+    }, {})
+  );
+
+  // Filtrar los clientes agrupados por nombre y ordenar los activos primero.
+  const filteredClients = groupedClients
     .filter((client) =>
       client.nombre_cliente.toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -70,7 +83,7 @@ export default function UserManagement() {
               <tr className="border-b border-white/5 bg-white/[0.02]">
                 <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Identidad</th>
                 <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Contacto</th>
-                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Mascota Principal</th>
+                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Mascotas</th>
                 <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Estado</th>
                 <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-right">Autoridad</th>
               </tr>
@@ -107,10 +120,14 @@ export default function UserManagement() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    {client.nombre_mascota ? (
-                      <span className={`px-2 py-0.5 bg-white/5 rounded text-[10px] font-black uppercase ${client.activo ? 'text-zinc-400' : 'text-zinc-800'}`}>
-                        {client.nombre_mascota}
-                      </span>
+                    {client.mascotas && client.mascotas.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {client.mascotas.map((pet, idx) => (
+                          <span key={idx} className={`px-2 py-0.5 bg-white/5 rounded text-[10px] font-black uppercase ${client.activo ? 'text-zinc-400' : 'text-zinc-800'}`}>
+                            {pet}
+                          </span>
+                        ))}
+                      </div>
                     ) : <span className="text-[10px] text-zinc-800 uppercase italic">Sin Registro</span>}
                   </td>
                   <td className="px-6 py-4">

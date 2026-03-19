@@ -29,14 +29,14 @@ export const useStayClientStore = create((set) => ({
     }
   },
 
-  // Crear una nueva relación estancia-cliente
-  addStayClient: async (id_estancia, id_cliente, fecha_inicio, fecha_fin, lista_espera = false) => {
+  // Crear una nueva relación estancia-mascota
+  addStayClient: async (id_estancia, id_mascota, fecha_inicio, fecha_fin, lista_espera = false) => {
     try {
-      console.log("📌 Creando estancia-cliente...");
-      console.log("Datos:", id_estancia, id_cliente, fecha_inicio, fecha_fin, lista_espera);
+      console.log("📌 Creando estancia-mascota...");
+      console.log("Datos:", id_estancia, id_mascota, fecha_inicio, fecha_fin, lista_espera);
       const newEntry = await createStayClient(
         id_estancia,
-        id_cliente,
+        id_mascota,
         fecha_inicio,
         fecha_fin,
         lista_espera
@@ -53,18 +53,18 @@ export const useStayClientStore = create((set) => ({
     }
   },
 
-  // Eliminar una relación estancia-cliente
-  removeStayClient: async (id_estancia, id_cliente) => {
+  // Eliminar una relación estancia-mascota
+  removeStayClient: async (id_estancia, id_mascota) => {
     try {
-      console.log("📌 Eliminando estancia-cliente...");
-      const result = await deleteStayClient(id_estancia, id_cliente);
+      console.log("📌 Eliminando estancia-mascota...");
+      const result = await deleteStayClient(id_estancia, id_mascota);
       console.log("✅ Estancia-cliente eliminada:", result);
 
       if (result?.success || !result?.error) {
         set((state) => ({
           stayClients: state.stayClients.filter(
             (item) =>
-              item.id_estancia !== id_estancia || item.id_cliente !== id_cliente
+              item.id_estancia !== id_estancia || item.id_mascota !== id_mascota
           ),
         }));
       }
@@ -73,12 +73,12 @@ export const useStayClientStore = create((set) => ({
     }
   },
 
-  // Actualizar una relación estancia-cliente
+  // Actualizar una relación estancia-mascota
   updateStayClient: async (
     id_estancia,
-    id_cliente,
+    id_mascota,
     nueva_id_estancia,
-    nueva_id_cliente,
+    nueva_id_mascota,
     fecha_inicio,
     fecha_fin,
     lista_espera
@@ -89,9 +89,9 @@ export const useStayClientStore = create((set) => ({
       // Llamada a la función que se comunica con el servidor
       const updatedEntry = await updateStayClient(
         id_estancia,
-        id_cliente,
+        id_mascota,
         nueva_id_estancia,
-        nueva_id_cliente,
+        nueva_id_mascota,
         fecha_inicio,
         fecha_fin,
         lista_espera
@@ -102,7 +102,7 @@ export const useStayClientStore = create((set) => ({
       if (updatedEntry && !updatedEntry.error) {
         set((state) => ({
           stayClients: state.stayClients.map((item) =>
-            item.id_estancia === id_estancia && item.id_cliente === id_cliente
+            item.id_estancia === id_estancia && item.id_mascota === id_mascota
               ? { ...item, ...updatedEntry } // Actualiza el item con los nuevos valores
               : item
           ),

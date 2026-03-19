@@ -6,6 +6,7 @@ import {
   Notification,
   useToaster,
   DateRangePicker,
+  SelectPicker,
 } from "rsuite";
 import isBefore from "date-fns/isBefore";
 import startOfDay from "date-fns/startOfDay";
@@ -16,6 +17,7 @@ import PropTypes from "prop-types";
 import { getStayAll } from "../../services/stay";
 import { createStayClient } from "../../services/stay_client";
 import { getClient } from "../../services/client";
+import { getPet } from "../../services/pet";
 
 // Formateo seguro de fechas
 const safeFormat = (date) => {
@@ -31,6 +33,8 @@ export default function ClientStayReservation({ onReservationSuccess }) {
   const [showModal, setShowModal] = useState(false);
   const [stays, setStays] = useState([]);
   const [client, setClient] = useState(null);
+  const [pets, setPets] = useState([]);
+  const [selectedPet, setSelectedPet] = useState(null);
   const [selectedDates, setSelectedDates] = useState([]);
   const toaster = useToaster();
 
@@ -45,7 +49,17 @@ export default function ClientStayReservation({ onReservationSuccess }) {
         });
 
       getClient()
-        .then(setClient)
+        .then(c => {
+          setClient(c);
+          if (c?.id) {
+            getPet(c.id).then(petsData => {
+              setPets(petsData || []);
+              if (petsData?.length === 1) {
+                setSelectedPet(petsData[0].id);
+              }
+            });
+          }
+        })
         .catch(error => {
           console.error("Error al cargar datos del cliente:", error);
           toaster.push(<Notification type="error" header="Error al cargar perfil" />, { placement: "topEnd" });
@@ -55,6 +69,7 @@ export default function ClientStayReservation({ onReservationSuccess }) {
 
   const handleOpenModal = () => {
     setSelectedDates([]);
+    setSelectedPet(null);
     setShowModal(true);
   };
 
@@ -63,6 +78,11 @@ export default function ClientStayReservation({ onReservationSuccess }) {
   const handleReserve = async () => {
     if (!selectedDates || selectedDates.length !== 2) {
       toaster.push(<Notification type="error" header="Fechas no válidas" closable>Por favor, selecciona un rango de fechas.</Notification>, { placement: "topEnd" });
+      return;
+    }
+
+    if (!selectedPet) {
+      toaster.push(<Notification type="error" header="Falta Mascota" closable>Por favor, selecciona una mascota para la reserva.</Notification>, { placement: "topEnd" });
       return;
     }
 
@@ -88,7 +108,7 @@ export default function ClientStayReservation({ onReservationSuccess }) {
     }
 
     try {
-      const result = await createStayClient(selectedStayBlock.id, client.id, safeFormat(startDate), safeFormat(endDate));
+      const result = await createStayClient(selectedStayBlock.id, selectedPet, safeFormat(startDate), safeFormat(endDate));
 
       if (result && result.error) {
         throw new Error(result.error);
@@ -144,6 +164,21 @@ export default function ClientStayReservation({ onReservationSuccess }) {
               <p className="text-[10px] text-zinc-600 uppercase tracking-widest mt-2 ml-2">
                 Solo se mostrarán los periodos habilitados.
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">
+                Selecciona la mascota
+              </label>
+              <SelectPicker
+                block
+                data={pets.map(p => ({ label: p.nombre, value: p.id }))}
+                value={selectedPet}
+                onChange={setSelectedPet}
+                placeholder="Elige tu mascota"
+                className="custom-input-picker"
+                searchable={false}
+              />
             </div>
           </Form>
         </Modal.Body>

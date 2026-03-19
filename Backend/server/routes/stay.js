@@ -55,7 +55,7 @@ router.get("/all", async (req, res) => {
         (e.cupo - IFNULL(sub.total, 0)) AS cupo
       FROM estancia e
       LEFT JOIN (
-        SELECT id_estancia, COUNT(*) AS total FROM estancia_cliente GROUP BY id_estancia
+        SELECT id_estancia, COUNT(*) AS total FROM mascota_estancia GROUP BY id_estancia
       ) sub ON e.id = sub.id_estancia;
     `);
     logger.info("Estancias encontradas (cupo dinámico): ", results);
@@ -74,12 +74,13 @@ router.get("/:nombre", async (req, res) => {
         e.id, 
         e.fecha_inicio, 
         e.fecha_fin, 
-        (e.cupo - sub.total) AS cupo
+        (e.cupo - IFNULL(sub.total, 0)) AS cupo
       FROM estancia e
-      INNER JOIN estancia_cliente ec ON e.id = ec.id_estancia
-      INNER JOIN cliente cli ON cli.id = ec.id_cliente
+      INNER JOIN mascota_estancia me ON e.id = me.id_estancia
+      INNER JOIN mascota m ON m.id = me.id_mascota
+      INNER JOIN cliente cli ON cli.id = m.id_cliente
       LEFT JOIN (
-        SELECT id_estancia, COUNT(*) AS total FROM estancia_cliente GROUP BY id_estancia
+        SELECT id_estancia, COUNT(*) AS total FROM mascota_estancia GROUP BY id_estancia
       ) sub ON e.id = sub.id_estancia
       WHERE cli.nombre = :nombre;
     `, { replacements: { nombre: req.params.nombre } });
@@ -104,7 +105,7 @@ router.get("/", async (req, res) => {
         (e.cupo - IFNULL(sub.total, 0)) AS cupo
       FROM estancia e
       LEFT JOIN (
-        SELECT id_estancia, COUNT(*) AS total FROM estancia_cliente GROUP BY id_estancia
+        SELECT id_estancia, COUNT(*) AS total FROM mascota_estancia GROUP BY id_estancia
       ) sub ON e.id = sub.id_estancia;
     `);
     res.json(results);
@@ -160,7 +161,7 @@ router.get("/:fecha", async (req, res) => {
         (e.cupo - IFNULL(sub.total, 0)) AS cupo
       FROM estancia e
       LEFT JOIN (
-        SELECT id_estancia, COUNT(*) AS total FROM estancia_cliente GROUP BY id_estancia
+        SELECT id_estancia, COUNT(*) AS total FROM mascota_estancia GROUP BY id_estancia
       ) sub ON e.id = sub.id_estancia
       WHERE e.fecha_inicio <= :fecha AND e.fecha_fin >= :fecha;
     `, { replacements: { fecha } });
@@ -192,7 +193,7 @@ router.get("/id/:id", async (req, res) => {
         (e.cupo - IFNULL(sub.total, 0)) AS cupo_actual
       FROM estancia e
       LEFT JOIN (
-        SELECT id_estancia, COUNT(*) AS total FROM estancia_cliente GROUP BY id_estancia
+        SELECT id_estancia, COUNT(*) AS total FROM mascota_estancia GROUP BY id_estancia
       ) sub ON e.id = sub.id_estancia
       WHERE e.id = :id;
     `, { replacements: { id } });

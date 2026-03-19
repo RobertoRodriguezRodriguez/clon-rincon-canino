@@ -13,11 +13,11 @@ dayjs.extend(isSameOrAfter);
 
 const router = express.Router();
 
-// Crear una nueva relación de estancia y cliente
+// Crear una nueva relación de estancia y mascota
 router.post('/create', async (req, res) => {
-  const { id_estancia, id_cliente, fecha_inicio, fecha_fin } = req.body;
+  const { id_estancia, id_mascota, fecha_inicio, fecha_fin } = req.body;
 
-  if (!id_estancia || !id_cliente || !fecha_inicio || !fecha_fin) {
+  if (!id_estancia || !id_mascota || !fecha_inicio || !fecha_fin) {
     return res.status(400).json({ error: 'Datos incompletos' });
   }
 
@@ -53,7 +53,7 @@ router.post('/create', async (req, res) => {
 
     // 3. Obtener todas las reservas existentes para esta estancia
     const [reservasExistentes] = await sequelize.query(
-      `SELECT fecha_inicio, fecha_fin FROM estancia_cliente WHERE id_estancia = ?`,
+      `SELECT fecha_inicio, fecha_fin FROM mascota_estancia WHERE id_estancia = ?`,
       { replacements: [id_estancia] }
     );
 
@@ -81,45 +81,53 @@ router.post('/create', async (req, res) => {
     }
 
     // 5. Si todos los días tienen cupo, insertamos la reserva
-    const newStayClient = await StayClient.create({
+    const newStayPet = await StayClient.create({
       id_estancia,
-      id_cliente,
+      id_mascota,
       fecha_inicio,
       fecha_fin,
       lista_espera: req.body.lista_espera ?? false,
     });
 
-    logger.info(`Reserva de estancia creada para cliente ${id_cliente} del ${fecha_inicio} al ${fecha_fin}`);
+    logger.info(`Reserva de estancia creada para mascota ${id_mascota} del ${fecha_inicio} al ${fecha_fin}`);
 
     res.status(201).json({
       message: "Relación creada correctamente",
-      data: newStayClient,
+      data: newStayPet,
     });
   } catch (error) {
     if (error.name === 'SequelizeUniqueConstraintError' || (error.original && error.original.code === 'ER_DUP_ENTRY')) {
-      return res.status(409).json({ error: "Este cliente ya tiene una reserva en esta estancia." });
+      return res.status(409).json({ error: "Esta mascota ya tiene una reserva en esta estancia para estas fechas." });
     }
     logger.error("Error al crear la relación de estancia y cliente:", error);
     res.status(500).json({ error: "Error al procesar la reserva" });
   }
 });
 
-// Obtener todas las relaciones de estancia y cliente
+// Obtener todas las relaciones de estancia y mascota (con info de mascota y cliente)
 router.get('/', async (req, res) => {
   try {
-    const stays = await StayClient.findAll();
-    res.status(200).json(stays);
+    const [results] = await sequelize.query(`
+      SELECT 
+        me.*,
+        m.nombre AS nombre_mascota,
+        c.nombre AS nombre_cliente
+      FROM mascota_estancia me
+      JOIN mascota m ON me.id_mascota = m.id
+      JOIN cliente c ON m.id_cliente = c.id
+    `);
+    res.status(200).json(results);
   } catch (error) {
     console.error('Error al obtener las relaciones:', error);
-    res.status(500).json({ error: 'Error al obtener las relaciones de estancia y cliente' });
+    res.status(500).json({ error: 'Error al obtener las relaciones de estancia y mascota' });
   }
 });
 
-// Eliminar una relación de estancia y cliente
+// Eliminar una relación de estancia y mascota
 router.delete('/', async (req, res) => {
-  const { id_estancia, id_cliente } = req.body;
+  const { id_estancia, id_mascota } = req.body;
 
-  if (!id_estancia || !id_cliente) {
+  if (!id_estancia || !id_mascota) {
     return res.status(400).json({ error: 'Datos incompletos' });
   }
 
@@ -127,50 +135,58 @@ router.delete('/', async (req, res) => {
     const deleted = await StayClient.destroy({
       where: {
         id_estancia,
-        id_cliente
+        id_mascota
       }
     });
 
     if (deleted) {
-      console.log(`Estancia ID ${id_estancia}: Relación eliminada (cupo se recalcula dinámicamente).`);
+      console.log(`Estancia ID ${id_estancia}: Relación eliminada.`);
       res.status(200).json({ message: 'Relación eliminada correctamente' });
     } else {
       res.status(404).json({ error: 'No se encontró la relación' });
     }
   } catch (error) {
-    console.error('Error al eliminar la relación o restaurar cupo:', error);
-    res.status(500).json({ error: 'Error al eliminar la relación de estancia y cliente' });
+    console.error('Error al eliminar la relación:', error);
+    res.status(500).json({ error: 'Error al eliminar la relación de estancia y mascota' });
   }
 });
 
-// Obtener todas las relaciones de estancia y cliente
+// Obtener todas las relaciones de estancia y mascota (con info de mascota y cliente)
 router.get('/all', async (req, res) => {
   try {
-    const stays = await StayClient.findAll();
-    res.status(200).json(stays);
+    const [results] = await sequelize.query(`
+      SELECT 
+        me.*,
+        m.nombre AS nombre_mascota,
+        c.nombre AS nombre_cliente
+      FROM mascota_estancia me
+      JOIN mascota m ON me.id_mascota = m.id
+      JOIN cliente c ON m.id_cliente = c.id
+    `);
+    res.status(200).json(results);
   } catch (error) {
     console.error('Error al obtener las relaciones:', error);
-    res.status(500).json({ error: 'Error al obtener las relaciones de estancia y cliente' });
+    res.status(500).json({ error: 'Error al obtener las relaciones de estancia y mascota' });
   }
 });
 
-// Actualizar una relación de estancia y cliente
+// Actualizar una relación de estancia y mascota
 router.put("/edit-stay-client-reservation", async (req, res) => {
-  const { id_estancia, id_cliente, nueva_id_estancia, nueva_id_cliente, fecha_inicio, fecha_fin, lista_espera } = req.body;
+  const { id_estancia, id_mascota, nueva_id_estancia, nueva_id_mascota, fecha_inicio, fecha_fin, lista_espera } = req.body;
 
   console.log("Datos recibidos para editar relación:", {
     id_estancia,
-    id_cliente,
+    id_mascota,
     nueva_id_estancia,
-    nueva_id_cliente,
+    nueva_id_mascota,
     fecha_inicio,
     fecha_fin,
     lista_espera
   });
 
   // Validar que se envían los identificadores originales
-  if (!id_estancia || !id_cliente) {
-    return res.status(400).json({ error: "Datos incompletos: se requieren id_estancia e id_cliente" });
+  if (!id_estancia || !id_mascota) {
+    return res.status(400).json({ error: "Datos incompletos: se requieren id_estancia e id_mascota" });
   }
 
   const transaction = await sequelize.transaction();
@@ -178,33 +194,33 @@ router.put("/edit-stay-client-reservation", async (req, res) => {
   try {
     // Verificar que la relación exista
     const [relacion] = await sequelize.query(
-      `SELECT * FROM estancia_cliente WHERE id_estancia = ? AND id_cliente = ?;`,
-      { replacements: [id_estancia, id_cliente], transaction }
+      `SELECT * FROM mascota_estancia WHERE id_estancia = ? AND id_mascota = ?;`,
+      { replacements: [id_estancia, id_mascota], transaction }
     );
 
     if (!relacion.length) {
-      throw new Error("Relación estancia-cliente no encontrada");
+      throw new Error("Relación estancia-mascota no encontrada");
     }
 
     // Si la relación existe, actualizarla
     await sequelize.query(
-      `UPDATE estancia_cliente
+      `UPDATE mascota_estancia
        SET 
          id_estancia = ?, 
-         id_cliente = ?, 
+         id_mascota = ?, 
          fecha_inicio = ?,
          fecha_fin = ?,
          lista_espera = ?
-       WHERE id_estancia = ? AND id_cliente = ?;`,
+       WHERE id_estancia = ? AND id_mascota = ?;`,
       {
         replacements: [
           nueva_id_estancia ?? id_estancia,
-          nueva_id_cliente ?? id_cliente,
+          nueva_id_mascota ?? id_mascota,
           fecha_inicio ?? relacion[0].fecha_inicio,
           fecha_fin ?? relacion[0].fecha_fin,
           lista_espera ?? relacion[0].lista_espera,
           id_estancia,
-          id_cliente
+          id_mascota
         ],
         transaction
       }
@@ -220,24 +236,26 @@ router.put("/edit-stay-client-reservation", async (req, res) => {
   }
 });
 
-// Obtener estancias por nombre de cliente
+// Obtener estancias por nombre de cliente (incluyendo info de mascota)
 router.get("/client/:nombre", async (req, res) => {
   const { nombre } = req.params;
   try {
     const [results] = await sequelize.query(
       `
       SELECT 
-        ec.id_estancia,
-        ec.id_cliente,
-        ec.fecha_inicio,
-        ec.fecha_fin,
-        ec.lista_espera,
+        me.id_estancia,
+        me.id_mascota,
+        me.fecha_inicio,
+        me.fecha_fin,
+        me.lista_espera,
+        m.nombre AS nombre_mascota,
         e.cupo
-      FROM estancia_cliente ec
-      JOIN cliente c ON ec.id_cliente = c.id
-      JOIN estancia e ON ec.id_estancia = e.id
+      FROM mascota_estancia me
+      JOIN mascota m ON me.id_mascota = m.id
+      JOIN cliente c ON m.id_cliente = c.id
+      JOIN estancia e ON me.id_estancia = e.id
       WHERE c.nombre = ?
-      ORDER BY ec.fecha_inicio ASC;
+      ORDER BY me.fecha_inicio ASC;
     `,
       { replacements: [nombre] }
     );
@@ -249,26 +267,26 @@ router.get("/client/:nombre", async (req, res) => {
 });
 
 
-// Obtener una relación de estancia y cliente por ID de la estancia y el id del cliente
-router.get('/:id_estancia/:id_cliente', async (req, res) => {
-  const { id_estancia, id_cliente } = req.params;
+// Obtener una relación de estancia y mascota por ID de la estancia y el id de la mascota
+router.get('/:id_estancia/:id_mascota', async (req, res) => {
+  const { id_estancia, id_mascota } = req.params;
 
   try {
-    const stayClient = await StayClient.findOne({
+    const stayPet = await StayClient.findOne({
       where: {
         id_estancia,
-        id_cliente
+        id_mascota
       }
     });
 
-    if (!stayClient) {
+    if (!stayPet) {
       return res.status(404).json({ error: 'Relación no encontrada' });
     }
 
-    res.status(200).json(stayClient);
+    res.status(200).json(stayPet);
   } catch (error) {
     console.error('Error al obtener la relación:', error);
-    res.status(500).json({ error: 'Error al obtener la relación de estancia y cliente' });
+    res.status(500).json({ error: 'Error al obtener la relación de estancia y mascota' });
   }
 });
 

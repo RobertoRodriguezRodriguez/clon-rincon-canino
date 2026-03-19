@@ -12,18 +12,19 @@ import {
 } from "rsuite";
 import isBefore from "date-fns/isBefore";
 import startOfDay from "date-fns/startOfDay";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { useStayClientStore } from "../../stores/stay-store";
-import { getClientsInfo } from "../../services/client";
 import { getStayAll } from "../../services/stay";
+import { getPetsInfo } from "../../services/pet";
 import { formatDate } from "../client-profile/reservation/utils";
 
 const { Column, HeaderCell, Cell } = Table;
 
 // Utility for safe date formatting
-const safeFormat = (date) => {
-  if (!date || isNaN(new Date(date).getTime())) return "";
-  return format(new Date(date), "yyyy-MM-dd");
+const safeFormat = (date, formatStr = "yyyy-MM-dd") => {
+  const d = new Date(date);
+  if (!isValid(d)) return "—";
+  return format(d, formatStr);
 };
 
 export default function StayClientsReservations() {
@@ -37,16 +38,23 @@ export default function StayClientsReservations() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingReservation, setEditingReservation] = useState(null);
-  const [clients, setClients] = useState([]);
+  const [pets, setPets] = useState([]);
   const [stays, setStays] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const [newReservation, setNewReservation] = useState({
     id_estancia: "",
-    id_cliente: "",
+    id_mascota: "",
     fecha_inicio: "",
     fecha_fin: "",
     nueva_id_estancia: "",
-    nueva_id_cliente: "",
+    nueva_id_mascota: "",
     lista_espera: false,
   });
 
@@ -54,16 +62,16 @@ export default function StayClientsReservations() {
 
   useEffect(() => {
     loadStayClients();
-    reloadClients();
+    reloadPets();
     reloadStays();
   }, [loadStayClients]);
 
-  const reloadClients = async () => {
+  const reloadPets = async () => {
     try {
-      const clientsData = await getClientsInfo();
-      setClients(clientsData || []);
+      const petsData = await getPetsInfo();
+      setPets(petsData || []);
     } catch (error) {
-      console.error("Error al cargar los clientes:", error);
+      console.error("Error al cargar las mascotas:", error);
     }
   };
 
@@ -80,11 +88,11 @@ export default function StayClientsReservations() {
     setEditingReservation(null);
     setNewReservation({
       id_estancia: "",
-      id_cliente: "",
+      id_mascota: "",
       fecha_inicio: "",
       fecha_fin: "",
       nueva_id_estancia: "",
-      nueva_id_cliente: "",
+      nueva_id_mascota: "",
       lista_espera: false,
     });
     setShowModal(true);
@@ -94,11 +102,11 @@ export default function StayClientsReservations() {
     setEditingReservation(reservation);
     setNewReservation({
       id_estancia: reservation.id_estancia,
-      id_cliente: reservation.id_cliente,
+      id_mascota: reservation.id_mascota,
       fecha_inicio: reservation.fecha_inicio,
       fecha_fin: reservation.fecha_fin,
       nueva_id_estancia: reservation.id_estancia,
-      nueva_id_cliente: reservation.id_cliente,
+      nueva_id_mascota: reservation.id_mascota,
       lista_espera: !!reservation.lista_espera,
     });
     setShowModal(true);
@@ -106,7 +114,7 @@ export default function StayClientsReservations() {
 
   const handleDelete = async (reservation) => {
     try {
-      await removeStayClient(reservation.id_estancia, reservation.id_cliente);
+      await removeStayClient(reservation.id_estancia, reservation.id_mascota);
       toaster.push(
         <Notification
           type="success"
@@ -127,15 +135,15 @@ export default function StayClientsReservations() {
   const handleSave = async () => {
     const {
       id_estancia,
-      id_cliente,
-      nueva_id_cliente,
+      id_mascota,
+      nueva_id_mascota,
       fecha_inicio,
       fecha_fin,
       lista_espera,
     } = newReservation;
 
-    if (!fecha_inicio || !fecha_fin || !nueva_id_cliente) {
-      toaster.push(<Notification type="error" header="Faltan datos (fechas o cliente)" />, {
+    if (!fecha_inicio || !fecha_fin || !nueva_id_mascota) {
+      toaster.push(<Notification type="error" header="Faltan datos (fechas o mascota)" />, {
         placement: "topEnd",
       });
       return;
@@ -170,9 +178,9 @@ export default function StayClientsReservations() {
       if (editingReservation) {
         await updateStayClient(
           id_estancia,
-          id_cliente,
+          id_mascota,
           finalStayId,
-          nueva_id_cliente,
+          nueva_id_mascota,
           fecha_inicio,
           fecha_fin,
           lista_espera
@@ -184,7 +192,7 @@ export default function StayClientsReservations() {
       } else {
         await addStayClient(
           finalStayId,
-          nueva_id_cliente,
+          nueva_id_mascota,
           fecha_inicio,
           fecha_fin,
           lista_espera
@@ -204,7 +212,8 @@ export default function StayClientsReservations() {
     }
   };
 
-  const filteredClients = clients.filter((client) => client.activo);
+  // No filter needed or filter by active client if pets info includes it
+  const filteredPets = pets;
 
   return (
     <div className="space-y-12">
@@ -228,7 +237,7 @@ export default function StayClientsReservations() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/5 bg-white/[0.02]">
-                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Residente</th>
+                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Mascota / Dueño</th>
                 <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Periodo Reservado</th>
                 <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Estado de Cupo</th>
                 <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-right">Acciones</th>
@@ -236,32 +245,33 @@ export default function StayClientsReservations() {
             </thead>
             <tbody className="divide-y divide-white/5">
               {stayClients.map((res, idx) => {
-                const client = clients.find(c => c.id_cliente === res.id_cliente);
                 const stay = stays.find(s => s.id === res.id_estancia);
                 return (
                   <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-xs font-bold text-white transition-colors group-hover/row:text-brand-violet">
-                          {client ? client.email : "—"}
+                        <span className="text-xs font-bold text-white transition-colors group-hover/row:text-brand-violet uppercase tracking-tight">
+                          {res.nombre_mascota || "—"}
                         </span>
-                        <span className="text-[10px] text-zinc-600 uppercase tracking-tighter">Cliente Identificado</span>
+                        <span className="text-[10px] text-zinc-600 uppercase tracking-tighter">
+                          Dueño: {res.nombre_cliente || "—"}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                            {format(new Date(res.fecha_inicio), "dd/MM/yyyy")}
+                            {safeFormat(res.fecha_inicio, "dd/MM/yyyy")}
                           </span>
                           <div className="w-4 h-[1px] bg-white/10" />
                           <span className="text-[10px] font-black text-brand-violet uppercase tracking-widest">
-                            {format(new Date(res.fecha_fin), "dd/MM/yyyy")}
+                            {safeFormat(res.fecha_fin, "dd/MM/yyyy")}
                           </span>
                         </div>
                         {stay && (
                           <span className="text-[8px] text-zinc-600 uppercase tracking-tighter mt-1 italic">
-                            Periodo: {format(new Date(stay.fecha_inicio), "dd/MM/yyyy")} - {format(new Date(stay.fecha_fin), "dd/MM/yyyy")}
+                            Periodo: {safeFormat(stay.fecha_inicio, "dd/MM/yyyy")} - {safeFormat(stay.fecha_fin, "dd/MM/yyyy")}
                           </span>
                         )}
                       </div>
@@ -341,15 +351,16 @@ export default function StayClientsReservations() {
                     });
                   }}
                   className="custom-date-range-picker"
+                  showOneCalendar={isMobile}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Asignar Cliente</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Seleccionar Mascota</label>
                 <SelectPicker
-                  data={filteredClients.map(c => ({ label: c.nombre_cliente || c.email, value: c.id_cliente }))}
-                  value={newReservation.nueva_id_cliente}
-                  onChange={v => setNewReservation(p => ({ ...p, nueva_id_cliente: v, ...(editingReservation ? {} : { id_cliente: v }) }))}
+                  data={filteredPets.map(p => ({ label: `${p.nombre_mascota} (${p.nombre_cliente})`, value: p.id }))}
+                  value={newReservation.nueva_id_mascota}
+                  onChange={v => setNewReservation(p => ({ ...p, nueva_id_mascota: v, ...(editingReservation ? {} : { id_mascota: v }) }))}
                   block
                   className="custom-input-picker"
                 />

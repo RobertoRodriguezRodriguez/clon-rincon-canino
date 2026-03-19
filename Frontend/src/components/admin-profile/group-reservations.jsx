@@ -7,11 +7,17 @@ import {
   Notification,
   useToaster,
   SelectPicker,
+  Input, // ✅ Añadido Input que faltaba
 } from "rsuite";
 import { useClassStore } from "../../stores/class-store";
-import { editReservation } from "../../services/class_client";
-import { getClientsInfo } from "../../services/client";
-import { format } from "date-fns";
+import { createReservation, editReservation, deleteReservation } from "../../services/class_client";
+import { getPetsInfo } from "../../services/pet";
+import { format, isValid } from "date-fns";
+
+const safeFormat = (date, formatStr) => {
+  const d = new Date(date);
+  return isValid(d) ? format(d, formatStr) : "Fecha inválida";
+};
 
 const { Column, HeaderCell, Cell } = Table;
 
@@ -27,16 +33,14 @@ export default function Reservations() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingReservation, setEditingReservation] = useState(null);
-  const [clients, setClients] = useState([]);
+  const [pets, setPets] = useState([]);
 
-  // Filtra solo los clientes activos y luego, si lo deseas, puedes ordenarlos
-  const filteredClients = clients.filter((client) => client.activo);
-
-  // console.log("clientes filtrados", filteredClients);
+  // Filtra solo las mascotas activas (si aplica)
+  const filteredPets = pets;
 
   const [newReservation, setNewReservation] = useState({
     id_clase: "",
-    id_cliente: "",
+    id_mascota: "",
     fecha: "",
     hora_inicio: "",
     hora_fin: "",
@@ -47,16 +51,16 @@ export default function Reservations() {
   useEffect(() => {
     loadGroupReservations();
     loadIndividualReservations();
-    reloadClients();
+    reloadPets();
     reloadClasses();
   }, [loadGroupReservations, loadIndividualReservations]);
 
-  const reloadClients = async () => {
+  const reloadPets = async () => {
     try {
-      const clients = await getClientsInfo();
-      setClients(clients);
+      const petsData = await getPetsInfo();
+      setPets(petsData || []);
     } catch (error) {
-      console.error("Error al cargar los clientes:", error);
+      console.error("Error al cargar las mascotas:", error);
     }
   };
 
@@ -64,7 +68,7 @@ export default function Reservations() {
     setEditingReservation(null);
     setNewReservation({
       id_clase: "",
-      id_cliente: "",
+      id_mascota: "",
       fecha: "",
       hora_inicio: "",
       hora_fin: "",
@@ -82,18 +86,7 @@ export default function Reservations() {
     console.log("Reserva seleccionada para borrar:", reservation);
 
     try {
-      const response = await fetch("/api/class_client", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_clase: reservation.id_clase,
-          id_cliente: reservation.id_cliente,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Error en la solicitud DELETE");
-      }
+      await deleteReservation(reservation.id_clase, reservation.id_mascota);
 
       toaster.push(
         <Notification
@@ -117,7 +110,7 @@ export default function Reservations() {
     const isEditing = !!editingReservation;
     if (
       !newReservation.id_clase ||
-      !newReservation.id_cliente ||
+      !newReservation.id_mascota ||
       (isEditing &&
         (!newReservation.fecha ||
           !newReservation.hora_inicio ||
@@ -130,11 +123,19 @@ export default function Reservations() {
       return;
     }
 
+    if (!newReservation.id_clase || !newReservation.id_mascota) {
+      toaster.push(
+        <Notification type="error" header="Selecciona una mascota y una clase" />,
+        { placement: "topEnd" }
+      );
+      return;
+    }
+
     try {
       if (editingReservation) {
         await editReservation(
           newReservation.id_clase,
-          newReservation.id_cliente,
+          newReservation.id_mascota,
           newReservation.fecha,
           newReservation.hora_inicio,
           newReservation.hora_fin
@@ -149,15 +150,7 @@ export default function Reservations() {
         );
       } else {
         // Nueva reserva
-        const response = await fetch("/api/class_client", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newReservation),
-        });
-
-        if (!response.ok) {
-          throw new Error("Error en la solicitud POST");
-        }
+        await createReservation(newReservation.id_clase, newReservation.id_mascota);
 
         toaster.push(
           <Notification type="success" header="Reserva creada correctamente" />,
@@ -171,7 +164,7 @@ export default function Reservations() {
     } catch (error) {
       console.error("Error al guardar la reserva:", error);
       toaster.push(
-        <Notification type="error" header="Error al guardar la reserva" />,
+        <Notification type="error" header={error.message || "Error al guardar la reserva"} />,
         { placement: "topEnd" }
       );
     }
@@ -209,7 +202,7 @@ export default function Reservations() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/5 bg-white/[0.02]">
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Cliente</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Mascota / Dueño</th>
                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Programación</th>
                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Ventana de Tiempo</th>
                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-right">Control</th>
@@ -220,13 +213,17 @@ export default function Reservations() {
                   <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-xs font-bold text-white transition-colors group-hover/row:text-brand-cyan">{res.email_cliente}</span>
-                        <span className="text-[10px] text-zinc-600 uppercase tracking-tighter">Acceso Verificado</span>
+                        <span className="text-xs font-bold text-white transition-colors group-hover/row:text-brand-cyan">
+                          {res.nombre_mascota || "—"}
+                        </span>
+                        <span className="text-[10px] text-zinc-600 uppercase tracking-tighter">
+                          Dueño: {res.nombre_cliente || "—"}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs font-medium text-zinc-300 italic">
-                        {format(new Date(res.fecha), "dd/MM/yyyy")}
+                        {safeFormat(res.fecha, "dd/MM/yyyy")}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -263,7 +260,7 @@ export default function Reservations() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/5 bg-white/[0.02]">
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Cliente Especializado</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Mascota / Dueño (One-to-One)</th>
                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Día</th>
                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Horario Reservado</th>
                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-right">Control</th>
@@ -272,9 +269,18 @@ export default function Reservations() {
               <tbody className="divide-y divide-white/5">
                 {individualReservations.map((res, idx) => (
                   <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-4 text-xs font-bold text-zinc-200 group-hover/row:text-brand-violet transition-colors">{res.email_cliente}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-zinc-200 group-hover/row:text-brand-violet transition-colors uppercase italic">
+                          {res.nombre_mascota || "—"}
+                        </span>
+                        <span className="text-[10px] text-zinc-600 uppercase tracking-tighter">
+                          Dueño: {res.nombre_cliente || "—"}
+                        </span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-xs italic text-zinc-400">
-                      {format(new Date(res.fecha), "dd/MM/yyyy")}
+                      {safeFormat(res.fecha, "dd/MM/yyyy")}
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-[10px] font-black text-brand-violet uppercase tracking-widest">{res.hora_inicio} — {res.hora_fin}</span>
@@ -307,7 +313,7 @@ export default function Reservations() {
                   <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Seleccionar Sesión</label>
                   <SelectPicker
                     data={classes.map(c => ({
-                      label: `${format(new Date(c.fecha), "dd/MM/yyyy")} | ${c.hora_inicio}`,
+                      label: `${safeFormat(c.fecha, "dd/MM/yyyy")} | ${c.hora_inicio}`,
                       value: c.id || c.id_clase,
                     }))}
                     value={newReservation.id_clase}
@@ -317,11 +323,11 @@ export default function Reservations() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Asignar Cliente</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-2">Seleccionar Mascota</label>
                   <SelectPicker
-                    data={filteredClients.map(c => ({ label: c.nombre_cliente, value: c.id_cliente }))}
-                    value={newReservation.id_cliente}
-                    onChange={v => setNewReservation({ ...newReservation, id_cliente: v })}
+                    data={filteredPets.map(p => ({ label: `${p.nombre_mascota} (${p.nombre_cliente})`, value: p.id }))}
+                    value={newReservation.id_mascota}
+                    onChange={v => setNewReservation({ ...newReservation, id_mascota: v })}
                     block
                     className="custom-input-picker"
                   />

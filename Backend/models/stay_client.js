@@ -2,14 +2,14 @@ import sequelize from "../server/db.js";
 import { DataTypes } from "sequelize";
 
 const StayClient = sequelize.define(
-  "estancia_cliente",
+  "mascota_estancia",
   {
-    id_estancia: {
+    id_mascota: {
       type: DataTypes.STRING(255),
       primaryKey: true,
       allowNull: false,
     },
-    id_cliente: {
+    id_estancia: {
       type: DataTypes.STRING(255),
       primaryKey: true,
       allowNull: false,

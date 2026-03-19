@@ -20,8 +20,13 @@ export default function ChangePasswordForm({ adminEmail, onSuccess }) {
           ? activeClients.filter(client => client.email !== adminEmail)
           : activeClients;
 
+        // Eliminar duplicados para asegurar una instancia única por usuario
+        const uniqueClients = Array.from(
+          new Map(filteredClients.map((client) => [client.email, client])).values()
+        );
+
         setClients(
-          filteredClients.map((client) => ({
+          uniqueClients.map((client) => ({
             label: `${client.nombre_cliente} (${client.email})`,
             value: client.email,
           }))

@@ -18,12 +18,15 @@ router.get("/group-reservations", async (req, res) => {
         clase.fecha, 
         clase.hora_inicio, 
         clase.hora_fin, 
+        mascota.id AS id_mascota,
+        mascota.nombre AS nombre_mascota,
         cliente.id AS id_cliente, 
         cliente.nombre AS nombre_cliente, 
         cliente.email AS email_cliente 
       FROM clase 
-      INNER JOIN clase_cliente ON clase.id = clase_cliente.id_clase 
-      INNER JOIN cliente ON cliente.id = clase_cliente.id_cliente 
+      INNER JOIN mascota_clase ON clase.id = mascota_clase.id_clase 
+      INNER JOIN mascota ON mascota.id = mascota_clase.id_mascota
+      INNER JOIN cliente ON cliente.id = mascota.id_cliente 
       WHERE clase.cupo > 1 
       ORDER BY clase.fecha ASC
       LIMIT ? OFFSET ?;
@@ -40,15 +43,16 @@ router.get("/group-reservations", async (req, res) => {
 
 // Crear una nueva reserva
 router.post("/", async (req, res) => {
-  const { id_clase, id_cliente } = req.body;
+  const { id_clase, id_mascota } = req.body;
+  console.log("POST /api/class_client - BODY:", req.body);
 
 
   if (!id_clase) {
-    return res.status(400).json({ error: "Clase  no definida" });
+    return res.status(400).json({ error: "ERR_BACKEND_CLASE_MISSING" });
   }
 
-  if (!id_cliente) {
-    return res.status(400).json({ error: "Cliente no definido" });
+  if (!id_mascota) {
+    return res.status(400).json({ error: "ERR_BACKEND_MASCOTA_MISSING" });
   }
 
   try {
@@ -62,35 +66,33 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ error: "La clase no existe" });
     }
 
-    // Verificar si el cliente tiene mascota
-    const [hasPet] = await sequelize.query(
-      `SELECT mascota.nombre FROM cliente 
-       LEFT JOIN mascota ON cliente.id = mascota.id_cliente 
-       WHERE cliente.id = ?;`,
-      { replacements: [id_cliente] }
+    // Verificar si la mascota existe
+    const [petExists] = await sequelize.query(
+      `SELECT nombre FROM mascota WHERE id = ?;`,
+      { replacements: [id_mascota] }
     );
 
-    if (!hasPet.some((pet) => pet.nombre)) {
-      return res.status(400).json({ error: "El cliente debe registrar una mascota antes de reservar" });
+    if (!petExists.length) {
+      return res.status(400).json({ error: "La mascota no existe" });
     }
 
-    // Verificar si ya existe la reserva para este cliente en esta clase
+    // Verificar si ya existe la reserva para esta mascota en esta clase
     const [reservationExists] = await sequelize.query(
-      `SELECT id_clase FROM clase_cliente WHERE id_clase = ? AND id_cliente = ?;`,
-      { replacements: [id_clase, id_cliente] }
+      `SELECT id_clase FROM mascota_clase WHERE id_clase = ? AND id_mascota = ?;`,
+      { replacements: [id_clase, id_mascota] }
     );
 
     if (reservationExists.length) {
-      return res.status(400).json({ error: "El cliente ya tiene una reserva para esta clase" });
+      return res.status(400).json({ error: "Esta mascota ya tiene una reserva para esta clase" });
     }
 
     // Obtener cupo máximo y reservas actuales en una sola consulta
     const [status] = await sequelize.query(`
       SELECT 
         c.cupo AS maxCupo,
-        COUNT(cc.id_cliente) AS currentReservations
+        COUNT(mc.id_mascota) AS currentReservations
       FROM clase c
-      LEFT JOIN clase_cliente cc ON c.id = cc.id_clase
+      LEFT JOIN mascota_clase mc ON c.id = mc.id_clase
       WHERE c.id = ?
       GROUP BY c.id;
     `, { replacements: [id_clase] });
@@ -107,8 +109,8 @@ router.post("/", async (req, res) => {
 
     // Crear la reserva
     await sequelize.query(
-      `INSERT INTO clase_cliente (id_clase, id_cliente) VALUES (?, ?);`,
-      { replacements: [id_clase, id_cliente] }
+      `INSERT INTO mascota_clase (id_clase, id_mascota) VALUES (?, ?);`,
+      { replacements: [id_clase, id_mascota] }
     );
 
     res.status(201).json({ message: "Reserva creada correctamente" });
@@ -121,17 +123,17 @@ router.post("/", async (req, res) => {
 
 // Actualizar una reserva grupal
 router.put("/edit-reservation", async (req, res) => {
-  const { id_clase, id_cliente, nueva_fecha, nueva_hora_inicio, nueva_hora_fin } = req.body;
+  const { id_clase, id_mascota, nueva_fecha, nueva_hora_inicio, nueva_hora_fin } = req.body;
 
   console.log("Datos recibidos para editar reserva:", {
     id_clase,
-    id_cliente,
+    id_mascota,
     nueva_fecha,
     nueva_hora_inicio,
     nueva_hora_fin,
   });
 
-  if (!id_clase || !id_cliente || !nueva_fecha || !nueva_hora_inicio || !nueva_hora_fin) {
+  if (!id_clase || !id_mascota || !nueva_fecha || !nueva_hora_inicio || !nueva_hora_fin) {
     return res.status(400).json({ error: "Datos incompletos" });
   }
 
@@ -148,14 +150,14 @@ router.put("/edit-reservation", async (req, res) => {
       throw new Error("Clase no encontrada");
     }
 
-    // Verificar relación clase-cliente
+    // Verificar relación clase-mascota
     const [reservationExists] = await sequelize.query(
-      `SELECT * FROM clase_cliente WHERE id_clase = ? AND id_cliente = ?;`,
-      { replacements: [id_clase, id_cliente], transaction }
+      `SELECT * FROM mascota_clase WHERE id_clase = ? AND id_mascota = ?;`,
+      { replacements: [id_clase, id_mascota], transaction }
     );
 
     if (!reservationExists.length) {
-      throw new Error("Relación clase-cliente no encontrada");
+      throw new Error("Relación clase-mascota no encontrada");
     }
 
     // Confirmar transacción
@@ -171,17 +173,17 @@ router.put("/edit-reservation", async (req, res) => {
 
 // Eliminar una reserva grupal
 router.delete("/", async (req, res) => {
-  const { id_clase, id_cliente } = req.body;
-  console.log("Datos recibidos en DELETE:", { id_clase, id_cliente });
+  const { id_clase, id_mascota } = req.body;
+  console.log("Datos recibidos en DELETE:", { id_clase, id_mascota });
 
-  if (!id_clase || !id_cliente) {
-    return res.status(400).json({ error: "Clase o cliente no definidos" });
+  if (!id_clase || !id_mascota) {
+    return res.status(400).json({ error: "Clase o mascota no definidas" });
   }
 
   try {
     await sequelize.query(
-      `DELETE FROM clase_cliente WHERE id_clase = ? AND id_cliente = ?;`,
-      { replacements: [id_clase, id_cliente] }
+      `DELETE FROM mascota_clase WHERE id_clase = ? AND id_mascota = ?;`,
+      { replacements: [id_clase, id_mascota] }
     );
 
     console.log(`Clase ID ${id_clase}: Reserva eliminada (cupo se recalcula dinámicamente).`);
@@ -209,14 +211,18 @@ router.get("/:id", async (req, res) => {
         clase.hora_inicio,
         clase.hora_fin,
         clase.cupo,
+        mascota.id AS id_mascota,
+        mascota.nombre AS nombre_mascota,
         cliente.id AS id_cliente,
         cliente.nombre AS nombre_cliente,
         cliente.email AS email_cliente
       FROM clase
-      INNER JOIN clase_cliente 
-        ON clase.id = clase_cliente.id_clase
+      INNER JOIN mascota_clase 
+        ON clase.id = mascota_clase.id_clase
+      INNER JOIN mascota
+        ON mascota.id = mascota_clase.id_mascota
       INNER JOIN cliente 
-        ON cliente.id = clase_cliente.id_cliente
+        ON cliente.id = mascota.id_cliente
       WHERE cliente.id = ?
       ORDER BY clase.fecha ASC;
     `,

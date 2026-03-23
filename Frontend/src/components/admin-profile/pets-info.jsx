@@ -76,13 +76,13 @@ export default function PetsInfo() {
 
     try {
       await updatePetInfo(
+        selectedPet.id,
         nombre,
         parseInt(edad),
         castrado,
         vacunas,
         condicionEspecial,
-        sociable,
-        selectedPet.id
+        sociable
       );
 
       setPets((prevPets) =>

@@ -52,7 +52,7 @@ router.get("/all", async (req, res) => {
         e.id, 
         e.fecha_inicio, 
         e.fecha_fin, 
-        (e.cupo - IFNULL(sub.total, 0)) AS cupo
+        (e.cupo - COALESCE(sub.total, 0)) AS cupo
       FROM estancia e
       LEFT JOIN (
         SELECT id_estancia, COUNT(*) AS total FROM mascota_estancia GROUP BY id_estancia
@@ -74,7 +74,7 @@ router.get("/:nombre", async (req, res) => {
         e.id, 
         e.fecha_inicio, 
         e.fecha_fin, 
-        (e.cupo - IFNULL(sub.total, 0)) AS cupo
+        (e.cupo - COALESCE(sub.total, 0)) AS cupo
       FROM estancia e
       INNER JOIN mascota_estancia me ON e.id = me.id_estancia
       INNER JOIN mascota m ON m.id = me.id_mascota
@@ -102,7 +102,7 @@ router.get("/", async (req, res) => {
         e.id, 
         e.fecha_inicio, 
         e.fecha_fin, 
-        (e.cupo - IFNULL(sub.total, 0)) AS cupo
+        (e.cupo - COALESCE(sub.total, 0)) AS cupo
       FROM estancia e
       LEFT JOIN (
         SELECT id_estancia, COUNT(*) AS total FROM mascota_estancia GROUP BY id_estancia
@@ -158,7 +158,7 @@ router.get("/:fecha", async (req, res) => {
         e.id, 
         e.fecha_inicio, 
         e.fecha_fin, 
-        (e.cupo - IFNULL(sub.total, 0)) AS cupo
+        (e.cupo - COALESCE(sub.total, 0)) AS cupo
       FROM estancia e
       LEFT JOIN (
         SELECT id_estancia, COUNT(*) AS total FROM mascota_estancia GROUP BY id_estancia
@@ -190,7 +190,7 @@ router.get("/id/:id", async (req, res) => {
     const [results] = await sequelize.query(`
       SELECT 
         e.*, 
-        (e.cupo - IFNULL(sub.total, 0)) AS cupo_actual
+        (e.cupo - COALESCE(sub.total, 0)) AS cupo_actual
       FROM estancia e
       LEFT JOIN (
         SELECT id_estancia, COUNT(*) AS total FROM mascota_estancia GROUP BY id_estancia

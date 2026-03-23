@@ -135,7 +135,7 @@ export async function getGroupReservations() {
 
 export const getIndividualReservations = async () => {
   try {
-    const response = await axios.get("/api/class_client/individual");
+    const response = await axios.get(`${url}/class_client/individual`);
     return response.data;
   } catch (error) {
     console.error("Error al obtener reservas individuales:", error);

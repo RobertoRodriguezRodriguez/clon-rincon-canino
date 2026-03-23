@@ -6,6 +6,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import "dotenv/config"; // Lee variables del archivo .env si lo usas
 
+// Exportar JWT_SECRET para que lo usen las rutas
+// const JWT_SECRET = process.env.JWT_SECRET || "mysecretkey";
+
 // Conexión a DB (Sequelize, etc.)
 import "./server/db.js";
 

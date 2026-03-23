@@ -8,7 +8,7 @@ import { CustomProvider } from "rsuite";
 // Importa tus servicios para llamadas a la API
 import { getClient } from "../services/client";
 import { getPet } from "../services/pet";
-import { deletePhoto } from "../services/photos";
+import { getPhotos, getPhotosByPet, deletePhoto, BASE_URL } from "../services/photos";
 
 export default function PhotosPage() {
   const [photos, setPhotos] = useState([]);
@@ -33,13 +33,11 @@ export default function PhotosPage() {
 
   useEffect(() => {
     getClient().then((user) => {
+      if (!user || user.error) return;
       setUser(user);
 
-      if (user.error) return;
-
-      if (user.id === "1") {
-        fetch("http://localhost:3001/api/photos")
-          .then((response) => (response.status === 404 ? null : response.json()))
+      if (user.role === "admin" || String(user.id) === "1") {
+        getPhotos()
           .then((data) => {
             if (data && data.length > 0) {
               setPhotos(data);
@@ -50,10 +48,16 @@ export default function PhotosPage() {
           })
           .catch(() => setNoPhotos(true));
       } else {
-        getPet(user.id).then((pet) => {
-          setPet(pet);
-          fetch(`http://localhost:3001/api/photos/pet/${pet.id}`)
-            .then((response) => (response.status === 404 ? null : response.json()))
+        getPet(user.id).then((petData) => {
+          const petsList = Array.isArray(petData) ? petData : (petData && petData.id ? [petData] : []);
+          if (petsList.length === 0) {
+            setNoPhotos(true);
+            return;
+          }
+          const primaryPet = petsList[0];
+          setPet(primaryPet);
+          
+          getPhotosByPet(primaryPet.id)
             .then((data) => {
               if (data && data.length > 0) {
                 setPhotos(data);
@@ -79,7 +83,7 @@ export default function PhotosPage() {
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
 
-        {user && user.id === "1" ? <NavbarAdmin /> : <Navbar />}
+        {user && (user.role === "admin" || String(user.id) === "1") ? <NavbarAdmin /> : <Navbar />}
 
         <main className="relative z-10 m-auto max-w-screen-xl w-full px-6 py-28 space-y-16">
           <div className="space-y-4 text-center">
@@ -105,7 +109,7 @@ export default function PhotosPage() {
                   <div key={photo.id} className="group relative w-full md:w-[400px] aspect-[4/3] rounded-[2.5rem] overflow-hidden bg-[#161616] border border-white/5 shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:border-white/10">
                     <img
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-                      src={`http://localhost:3001/${rutaImagen}`}
+                      src={`${BASE_URL}/${rutaImagen}`}
                       alt="Mascota"
                     />
 

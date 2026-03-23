@@ -4,12 +4,12 @@ import { DataTypes } from "sequelize";
 const ClassClient = sequelize.define( "mascota_clase",
   {
     id_mascota: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.UUID,
       primaryKey: true,
       allowNull: false,
     },
     id_clase: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.UUID,
       primaryKey: true,
       allowNull: false,
     },

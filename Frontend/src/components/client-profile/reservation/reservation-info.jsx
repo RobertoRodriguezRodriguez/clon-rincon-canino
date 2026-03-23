@@ -90,24 +90,27 @@ export default function ReservationInfo({ id_cliente, id_pet }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {getData(myClassReservations).map((res, idx) => (
-                <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
-                  <td className="py-4 text-sm font-bold text-zinc-200">
-                    {format(new Date(res.fecha), "dd/MM/yyyy")}
-                  </td>
-                  <td className="py-4 text-sm font-bold text-zinc-200">
-                    {res.hora_inicio} - {res.hora_fin}
-                  </td>
-                  <td className="py-4">
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${(res.cupo_original || res.cupo) === 1
-                      ? "bg-brand-cyan/10 text-brand-cyan"
-                      : "bg-brand-violet/10 text-brand-violet"
-                      }`}>
-                      {(res.cupo_original || res.cupo) === 1 ? "Individual" : "Grupal"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {getData(myClassReservations).map((res, idx) => {
+                const isValidDate = res.fecha && !isNaN(new Date(res.fecha).getTime());
+                return (
+                  <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
+                    <td className="py-4 text-sm font-bold text-zinc-200">
+                      {isValidDate ? format(new Date(res.fecha), "dd/MM/yyyy") : "N/A"}
+                    </td>
+                    <td className="py-4 text-sm font-bold text-zinc-200">
+                      {res.hora_inicio || "--"} - {res.hora_fin || "--"}
+                    </td>
+                    <td className="py-4">
+                      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${(res.cupo_original || res.cupo) === 1
+                        ? "bg-brand-cyan/10 text-brand-cyan"
+                        : "bg-brand-violet/10 text-brand-violet"
+                        }`}>
+                        {(res.cupo_original || res.cupo) === 1 ? "Individual" : "Grupal"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
               {myClassReservations.length === 0 && (
                 <tr>
                   <td colSpan="3" className="py-8 text-center text-zinc-600 font-bold uppercase tracking-widest text-xs italic">
@@ -143,21 +146,25 @@ export default function ReservationInfo({ id_cliente, id_pet }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {getData(myStayReservations).map((res, idx) => (
-                <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
-                  <td className="py-4 text-sm font-bold text-zinc-200">
-                    {format(new Date(res.fecha_inicio), "dd/MM/yyyy")}
-                  </td>
-                  <td className="py-4 text-sm font-bold text-zinc-200">
-                    {format(new Date(res.fecha_fin), "dd/MM/yyyy")}
-                  </td>
-                  <td className="py-4 text-sm font-bold text-zinc-300 text-right">
-                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${res.lista_espera ? 'bg-orange-500/10 text-orange-500' : 'bg-brand-violet/10 text-brand-violet'}`}>
-                      {res.lista_espera ? 'Espera' : 'Confirmado'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {getData(myStayReservations).map((res, idx) => {
+                const isValidStart = res.fecha_inicio && !isNaN(new Date(res.fecha_inicio).getTime());
+                const isValidEnd = res.fecha_fin && !isNaN(new Date(res.fecha_fin).getTime());
+                return (
+                  <tr key={idx} className="group/row hover:bg-white/[0.02] transition-colors">
+                    <td className="py-4 text-sm font-bold text-zinc-200">
+                      {isValidStart ? format(new Date(res.fecha_inicio), "dd/MM/yyyy") : "N/A"}
+                    </td>
+                    <td className="py-4 text-sm font-bold text-zinc-200">
+                      {isValidEnd ? format(new Date(res.fecha_fin), "dd/MM/yyyy") : "N/A"}
+                    </td>
+                    <td className="py-4 text-sm font-bold text-zinc-300 text-right">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${res.lista_espera ? 'bg-orange-500/10 text-orange-500' : 'bg-brand-violet/10 text-brand-violet'}`}>
+                        {res.lista_espera ? 'Espera' : 'Confirmado'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
               {myStayReservations.length === 0 && (
                 <tr>
                   <td colSpan="3" className="py-8 text-center text-zinc-600 font-bold uppercase tracking-widest text-xs italic">

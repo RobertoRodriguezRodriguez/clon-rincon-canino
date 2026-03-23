@@ -1,34 +1,36 @@
 import { Sequelize } from 'sequelize';
 import dotenv from "dotenv";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '../db.env') });
 
 // Configuración de Sequelize
-const sequelize = new Sequelize(
-  process.env.DATABASE,
-  process.env.USER,
-  process.env.PASSWORD,
-  {
-    host: process.env.HOST,
-    port: process.env.PORT,
-    dialect: 'mysql',
-    logging: (msg) => console.log(`[Sequelize Log]: ${msg}`), // Habilitar logs detallados de Sequelize
-    dialectOptions: {
-      // Eliminamos el ssl para que funcione en local
-      ssl: false
-    },
-  }
-);
+const isProduction = process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('supabase.co');
+
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  logging: (msg) => console.log(`[Sequelize Log]: ${msg}`),
+  dialectOptions: {
+    ssl: isProduction ? {
+      require: true,
+      rejectUnauthorized: false
+    } : false
+  },
+});
 
 // Probar la conexión a la base de datos
 sequelize.authenticate()
   .then(() => {
     console.log('Conexión a la base de datos establecida correctamente.');
     console.log("Detalles de conexión:");
-    console.log(`  Host: ${process.env.DB_HOST}`);
-    console.log(`  Puerto: ${process.env.DB_PORT}`);
-    console.log(`  Base de datos: ${process.env.DB_DATABASE}`);
-    console.log(`  Usuario: ${process.env.DB_USER}`);
+    console.log(`  Host: ${process.env.HOST}`);
+    console.log(`  Puerto: ${process.env.PORT}`);
+    console.log(`  Base de datos: ${process.env.DATABASE}`);
+    console.log(`  Usuario: ${process.env.USER}`);
   })
   .catch((err) => {
     console.error('No se pudo conectar a la base de datos:', err);

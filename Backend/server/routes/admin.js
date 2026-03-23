@@ -6,7 +6,8 @@ import { sha1 } from "js-sha1";
 
 import Admin from "../../models/admin.js";
 
-const JWT_SECRET = "mysecretkey";
+const JWT_SECRET = process.env.JWT_SECRET || "mysecretkey";
+
 const router = express.Router();
 
 // Iniciar sesión

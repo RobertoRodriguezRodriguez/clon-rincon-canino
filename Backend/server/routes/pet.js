@@ -9,17 +9,22 @@ const router = express.Router();
 // Crear mascota
 router.post("/", async (req, res) => {
   const { nombre, edad, castrado, vacunas, condicion_especial, id_cliente, sociable } = req.body;
+  
+  // Normalizar valores para evitar fallos de validación por nulls
   Pet.create({
     nombre: nombre,
-    edad: edad,
-    castrado: castrado,
-    vacunas: vacunas,
-    condicion_especial: condicion_especial,
+    edad: edad !== null ? parseInt(edad) : 0,
+    castrado: !!castrado,
+    vacunas: !!vacunas,
+    condicion_especial: !!condicion_especial,
     id_cliente: id_cliente,
-    sociable: sociable, 
+    sociable: sociable !== undefined ? !!sociable : true, 
   }).then((pet) => {
     logger.info(`Mascota ${pet.dataValues["nombre"]} creada`);
     res.json(pet.dataValues);
+  }).catch((error) => {
+    console.error("Error en Pet.create:", error);
+    res.status(500).json({ error: error.message });
   });
 });
 
@@ -27,23 +32,30 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { nombre, edad, castrado, vacunas, condicion_especial, sociable } = req.body;
-  Pet.update(
-    {
-      nombre: nombre,
-      edad: edad,
-      castrado: castrado,
-      vacunas: vacunas,
-      condicion_especial: condicion_especial,
-      sociable: sociable, // Ahora incluimos sociable en la actualización
-    },
-    {
-      where: {
-        id: id,
-      },
-    }
-  ).then((pet) => {
-    logger.info(`Mascota ${nombre} - ${id} actualizada`);
-    res.json(pet);
+  
+  console.log("Datos recibidos para actualizar mascota:", { id, nombre, edad, castrado, vacunas, condicion_especial, sociable });
+
+  // Construir objeto de actualización solo con campos provistos que no sean undefined
+  const updateData = {};
+  if (nombre !== undefined) updateData.nombre = nombre;
+  if (edad !== undefined) updateData.edad = edad !== null ? parseInt(edad) : undefined;
+  
+  // Normalizar booleanos para evitar "notNull Violation" si vienen como null
+  if (castrado !== undefined) updateData.castrado = castrado === null ? false : !!castrado;
+  if (vacunas !== undefined) updateData.vacunas = vacunas === null ? false : !!vacunas;
+  if (condicion_especial !== undefined) updateData.condicion_especial = condicion_especial === null ? false : !!condicion_especial;
+  if (sociable !== undefined) updateData.sociable = sociable === null ? false : !!sociable;
+
+  console.log("Objeto de actualización final (Sequelize):", updateData);
+
+  Pet.update(updateData, {
+    where: { id },
+  }).then((result) => {
+    logger.info(`Mascota ${id} actualizada. Campos: ${Object.keys(updateData).join(", ")}`);
+    res.json(result);
+  }).catch((error) => {
+    console.error("Error en Pet.update:", error);
+    res.status(500).json({ error: error.message });
   });
 });
 

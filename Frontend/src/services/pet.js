@@ -104,12 +104,12 @@ export const getPets = async () => {
 
 //PUT request to update pet info
 export async function updatePetInfo(
+  pet_id,
   nombre,
   edad,
   castrado,
   vacunas,
   condicion_especial,
-  pet_id,
   sociable
 ) {
   try {

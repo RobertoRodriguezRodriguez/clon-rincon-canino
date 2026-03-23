@@ -23,15 +23,17 @@ export default function ProfileUserPage() {
   const [pets, setPets] = useState([]);
   const [activePetIndex, setActivePetIndex] = useState(0);
   const [showAddPet, setShowAddPet] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { reloadReservClasses } = useReservClassesStore();
 
   useEffect(() => {
     async function fetchData() {
       try {
         const userData = await getClient(navigate);
-        if (userData?.error) {
+        if (!userData || userData?.error) {
+          console.error("Error getting user data:", userData?.error);
           navigate("/login");
-        } else if (userData?.id === "1") {
+        } else if (userData?.role === "admin") {
           navigate("/profile-admin");
         } else {
           setUser(userData);
@@ -43,14 +45,21 @@ export default function ProfileUserPage() {
         }
       } catch (error) {
         console.error("Error al cargar datos del cliente o mascota:", error);
+        navigate("/login");
+      } finally {
+        setLoading(false);
       }
     }
 
     fetchData();
   }, [navigate]);
 
+  if (loading) {
+    return <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center"><p>Cargando datos...</p></div>;
+  }
+
   if (!user) {
-    return <p>Cargando datos...</p>;
+    return <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center"><p>Redirigiendo...</p></div>;
   }
 
   // Función para recargar mascotas tras un nuevo registro
@@ -132,7 +141,7 @@ export default function ProfileUserPage() {
               <ReservationInfo id_cliente={user.id} id_pet={activePet.id} />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <ClientClassReservation onReservationSuccess={() => reloadReservClasses(user.id)} />
+                <ClientClassReservation onReservationSuccess={() => reloadReservClasses(user.id)} id_cliente={user.id} id_pet={activePet.id} mascota={activePet} />
                 <Stay id_cliente={user.id} mascota={activePet} userName={user.nombre} />
               </div>
               

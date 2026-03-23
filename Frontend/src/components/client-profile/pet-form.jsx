@@ -51,12 +51,12 @@ export default function PetForm({ pet }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newPet = await updatePetInfo(
+      pet.id,
       nombre.value,
       Number(edad),
       castrado,
       vacunas,
       condicion_especial,
-      pet.id,
       sociable
     );
 

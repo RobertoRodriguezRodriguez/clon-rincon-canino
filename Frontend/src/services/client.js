@@ -5,8 +5,10 @@ export async function getClient(navigate) {
     const token = sessionStorage.getItem("token");
 
     if (!token) {
-      navigate("/login");
-      return;
+      if (typeof navigate === "function") {
+        navigate("/login");
+      }
+      return { error: "No token found" };
     }
 
     const response = await fetch(`${url}/client`, {
@@ -29,7 +31,8 @@ export async function getClient(navigate) {
 
     return responseJSON;
   } catch (error) {
-    console.log(error);
+    console.error("Error in getClient:", error);
+    return { error: error.message || "Error fetching client data" };
   }
 }
 

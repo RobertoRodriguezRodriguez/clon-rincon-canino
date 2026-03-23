@@ -5,12 +5,12 @@ const StayClient = sequelize.define(
   "mascota_estancia",
   {
     id_mascota: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.UUID,
       primaryKey: true,
       allowNull: false,
     },
     id_estancia: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.BIGINT,
       primaryKey: true,
       allowNull: false,
     },

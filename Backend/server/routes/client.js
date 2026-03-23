@@ -2,12 +2,14 @@ import { sha1 } from "js-sha1";
 import express from "express";
 import jwt from "jsonwebtoken";
 import sequelize from "../db.js";
+import { Op } from "sequelize";
 import { logger } from "../logger.js";
 
 import Client from "../../models/client.js";
 import Admin from "../../models/admin.js";
 
-export const JWT_SECRET = "mysecretkey";
+const JWT_SECRET = process.env.JWT_SECRET || "mysecretkey";
+
 const router = express.Router();
 
 // Iniciar sesión
@@ -68,28 +70,55 @@ router.get("/", verificarToken, async (req, res) => {
   try {
     const usuario = req.usuario; // { id: '...', email: '...' } del token
 
+    if (!usuario) {
+      logger.error("No se encontró información de usuario en el token verificado");
+      return res.status(401).json({ error: "Token inválido o sin información de usuario" });
+    }
+
+    logger.debug(`Buscando perfil para: ID=${usuario.id}, Email=${usuario.email}`);
+
     // Busca el cliente y el admin en paralelo para más eficiencia
-    const clientPromise = Client.findOne({ where: { id: usuario.id } });
-    const adminPromise = Admin.findOne({ where: { email: usuario.email } });
+    // Algunos tokens pueden tener ID numérico (admin '1') o UUID (clientes)
+    // En PostgreSQL, cruzar tipos (buscar UUID con '1' o Integer con UUID) lanza error.
+    const idStr = String(usuario.id);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idStr);
+    const isNumeric = /^\d+$/.test(idStr);
+    
+    // Si es UUID, buscamos en cliente. Si es numérico, en admin.
+    // Siempre buscamos por email como respaldo en ambos.
+    
+    const clientPromise = Client.findOne({ where: { 
+      [Op.or]: [
+        ...(isUUID ? [{ id: usuario.id }] : []),
+        { email: usuario.email }
+      ]
+    }});
+    
+    const adminPromise = Admin.findOne({ where: { 
+      [Op.or]: [
+        ...(isNumeric ? [{ id: parseInt(idStr, 10) }] : []),
+        { email: usuario.email }
+      ]
+    }});
 
     const [client, admin] = await Promise.all([clientPromise, adminPromise]);
 
     if (admin) {
       logger.info(`Perfil de ${admin.email} obtenido - Admin`);
-      return res.json(admin.dataValues);
+      return res.json({ ...admin.dataValues, role: "admin" });
     }
 
     if (client) {
       logger.info(`Perfil de ${client.email} obtenido - No admin`);
-      return res.json(client.dataValues);
+      return res.json({ ...client.dataValues, role: "user" });
     }
 
     // Si no se encuentra ni como admin ni como cliente
     logger.error("Usuario del token no encontrado en la BBDD:", usuario);
-    return res.status(404).json({ error: "Usuario no encontrado" });
+    return res.status(404).json({ error: "Usuario no encontrado en la base de datos" });
   } catch (error) {
     logger.error("Error en la ruta GET /client:", error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
@@ -313,7 +342,7 @@ router.get("/info-client", async (req, res) => {
         mascota.nombre AS nombre_mascota, 
         dni, 
         email, 
-        COALESCE(mascota.id, 'No tiene mascota') AS id_mascota 
+        COALESCE(CAST(mascota.id AS TEXT), 'No tiene mascota') AS id_mascota 
       FROM cliente 
       LEFT JOIN mascota ON cliente.id = mascota.id_cliente;`
   );

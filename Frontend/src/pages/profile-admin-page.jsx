@@ -22,13 +22,17 @@ import { CustomProvider } from "rsuite";
 export default function ProfileAdminPage() {
   const [user, setUser] = useState(null);
   const [showClasses, setShowClasses] = useState(true);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     getClient(navigate).then((userData) => {
-      if (userData.error) {
+      setLoading(false);
+      if (!userData || userData.error) {
+        console.error("Error getting user data:", userData?.error);
         navigate("/login");
-      } else if (userData.id !== "1") {
+      } else if (userData.role !== "admin") {
+        // Compara por rol (más escalable que email)
         navigate("/profile-user");
       } else {
         setUser(userData);
@@ -36,7 +40,8 @@ export default function ProfileAdminPage() {
     });
   }, [navigate]);
 
-  if (!user) return null;
+  if (loading) return <div className="min-h-screen bg-[#101010] flex items-center justify-center"><p className="text-zinc-400">Cargando...</p></div>;
+  if (!user) return <div className="min-h-screen bg-[#101010] flex items-center justify-center"><p className="text-zinc-400">Redirigiendo...</p></div>;
 
   const toggleManagement = () => setShowClasses(!showClasses);
 

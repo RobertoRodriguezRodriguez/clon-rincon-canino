@@ -4,9 +4,9 @@ import { DataTypes } from "sequelize";
 const Admin = sequelize.define( "admin",
   {
     id: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       primaryKey: true,
-      defaultValue: DataTypes.UUID,
+      autoIncrement: true,
       allowNull: false,
     },
     dni: {

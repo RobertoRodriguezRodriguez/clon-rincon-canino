@@ -5,8 +5,9 @@ const Stay = sequelize.define(
   "Stay",
   {
     id: {
-      type: DataTypes.STRING(255), 
+      type: DataTypes.BIGINT, 
       primaryKey: true,
+      autoIncrement: true,
       allowNull: false,
     },
     fecha_inicio: {

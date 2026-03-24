@@ -32,7 +32,14 @@ export default function ClientStayReservation({ onReservationSuccess, mascota })
   const [stays, setStays] = useState([]);
   const [client, setClient] = useState(null);
   const [selectedDates, setSelectedDates] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const toaster = useToaster();
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Carga los datos necesarios solo cuando se abre el modal
   useEffect(() => {
@@ -151,6 +158,7 @@ export default function ClientStayReservation({ onReservationSuccess, mascota })
                 }}
                 className="custom-date-range-picker"
                 placeholder="Elige las fechas de entrada y salida"
+                showOneCalendar={isMobile}
               />
               <p className="text-[10px] text-zinc-600 uppercase tracking-widest mt-2 ml-2">
                 Solo se mostrarán los periodos habilitados.

@@ -1,4 +1,4 @@
-const url = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+const url = import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:3001/api" : "https://clon-rincon-canino-back.onrender.com/api");
 
 
 // Ordena las reservas por fecha en orden ascendente

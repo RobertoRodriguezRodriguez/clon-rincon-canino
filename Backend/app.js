@@ -41,11 +41,9 @@ app.use("/api/photos", photosRouter);
 // app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ✅ Solo escucha en local, no en producción
-if (process.env.NODE_ENV !== "production") {
-  app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
-  });
-}
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
 
 // ✅ Exportar para Vercel
 export default app;

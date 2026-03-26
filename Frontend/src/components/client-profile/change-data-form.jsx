@@ -43,7 +43,7 @@ export default function ChangeDataForm({ id, phone, email }) {
         <div>
           <label
             htmlFor="phone"
-            className="block mb-2 font-semibold leading-none text-gray-900"
+            className="block mb-2 font-semibold leading-none text-white"
           >
             Teléfono
           </label>
@@ -55,7 +55,8 @@ export default function ChangeDataForm({ id, phone, email }) {
             value={telefono.value}
             onChange={handleTelefonoChange}
             onBlur={handleTelefonoBlur}
-            className={`w-full border px-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-300 focus:outline-none ${
+            placeholder="(+34)123456789"
+            className={`w-full bg-[#0a0a0a] border px-3 py-2 border-brand-violet rounded-lg focus:ring-2 focus:ring-brand-violet/50 focus:outline-none text-white placeholder-zinc-500 ${
               telefono.error && telefono.touched ? "border-red-500" : ""
             }`}
           />
@@ -67,7 +68,7 @@ export default function ChangeDataForm({ id, phone, email }) {
         <div>
           <label
             htmlFor="email"
-            className="block mb-2 font-semibold leading-none text-gray-900"
+            className="block mb-2 font-semibold leading-none text-white"
           >
             Correo electrónico
           </label>
@@ -79,7 +80,8 @@ export default function ChangeDataForm({ id, phone, email }) {
             name="email"
             onChange={handleEmailChange}
             onBlur={handleEmailBlur}
-            className={`w-full border px-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-300 focus:outline-none ${
+            placeholder="example@gmail.com"
+            className={`w-full bg-[#0a0a0a] border px-3 py-2 border-brand-violet rounded-lg focus:ring-2 focus:ring-brand-violet/50 focus:outline-none text-white placeholder-zinc-500 ${
               emailAddres.error && emailAddres.touched ? "border-red-500" : ""
             }`}
           />
@@ -103,7 +105,7 @@ export default function ChangeDataForm({ id, phone, email }) {
               }
               
             }}
-            className="text-zinc-700 hover:text-green-700 border border-zinc-700 hover:border-green-700 focus:ring-2 focus:outline-none focus:ring-green-600 font-medium rounded-lg text-sm px-4 py-0.5 text-center"
+            className="text-white hover:text-brand-violet border border-white/20 hover:border-brand-violet focus:ring-2 focus:outline-none focus:ring-brand-violet/50 font-medium rounded-lg text-sm px-6 py-2 text-center transition-all duration-300 bg-white/5 hover:bg-brand-violet/10"
           >
             Guardar
           </button>

@@ -10,6 +10,10 @@ const Photos = sequelize.define( "fotos",
       allowNull: false,
     },
     contenido: {
+      type: DataTypes.BLOB,
+      allowNull: false,
+    },
+    mimetype: {
       type: DataTypes.STRING,
       allowNull: false,
     },

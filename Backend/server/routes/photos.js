@@ -9,25 +9,8 @@ import * as fs from "fs";
 
 const router = express.Router();
 
-// Asegurarse de que la carpeta uploads exista
-const uploadDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-// 1) Configuración de Multer para guardar archivos en /uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Usar la ruta absoluta para evitar problemas con el directorio de trabajo actual
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Generar un nombre de archivo único para evitar colisiones y problemas con caracteres especiales
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const extension = path.extname(file.originalname);
-    cb(null, file.fieldname + "-" + uniqueSuffix + extension);
-  },
-});
+// 1) Configuración de Multer para guardar archivos en memoria
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
@@ -35,12 +18,9 @@ const upload = multer({
 });
 
 // 2) POST /api/photos
-//    Sube imagen y guarda la ruta en la BD
+//    Sube imagen y guarda el buffer en la BD
 router.post("/", upload.single("file"), async (req, res) => {
   try {
-    console.log("Body recibido:", req.body);
-    console.log("Archivo recibido:", req.file);
-
     if (!req.file) {
       return res.status(400).json({ error: "No se recibió ningún archivo." });
     }
@@ -52,34 +32,34 @@ router.post("/", upload.single("file"), async (req, res) => {
     }
 
     const idPet = req.body.id_pet;
-    // Construir una ruta relativa para la URL que se guardará en la base de datos
-    const urlPath = `uploads/${req.file.filename}`;
-
     const newId = uuidv4();
+    
     const newPhoto = await Photos.create({
       id: newId,
-      contenido: urlPath,
+      contenido: req.file.buffer,
+      mimetype: req.file.mimetype,
       id_pet: idPet,
     });
 
-    console.log("Nueva foto guardada en BD:", newPhoto.toJSON());
-    res.json(newPhoto);
+    console.log("Nueva foto guardada en BD:", newId);
+    
+    // Devolvemos la foto sin el buffer para que la respuesta no sea pesada
+    const { contenido, ...photoData } = newPhoto.toJSON();
+    res.json(photoData);
   } catch (error) {
     console.error("Error al procesar la solicitud:", error);
-    // Si ocurre un error después de que el archivo se haya subido, lo eliminamos para no dejar basura.
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
     res.status(500).json({ error: error.message });
   }
 });
 
 
 // 3) GET /api/photos
-//    Obtiene todas las fotos de la BD (puedes ver sus rutas "contenido")
+//    Obtiene todas las fotos de la BD (sin el contenido binario)
 router.get("/", async (req, res) => {
   try {
-    const photos = await Photos.findAll();
+    const photos = await Photos.findAll({
+      attributes: { exclude: ['contenido'] }
+    });
     res.json(photos);
   } catch (error) {
     console.error("Error al obtener las fotos:", error);
@@ -88,12 +68,12 @@ router.get("/", async (req, res) => {
 });
 
 // 4) GET /api/photos/:id
-//    Obtiene la info de UNA foto (según PK)
+//    Obtiene la info de UNA foto (sin el contenido binario)
 router.get("/:id", async (req, res) => {
-  // console.log("REQ:", req.params.id)
   try {
-    const photo = await Photos.findByPk(req.params.id);
-    // console.log("FOTO back:", photo)
+    const photo = await Photos.findByPk(req.params.id, {
+      attributes: { exclude: ['contenido'] }
+    });
     if (!photo) {
       return res.status(404).json({ error: "Foto no encontrada." });
     }
@@ -104,12 +84,29 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-//5) GET /api/photos/pet/:id
-// Obtener la foto de un pet por su ID
+// NUEVA RUTA: Sirve la imagen binaria directamente
+router.get("/:id/image", async (req, res) => {
+  try {
+    const photo = await Photos.findByPk(req.params.id);
+    if (!photo || !photo.contenido) {
+      return res.status(404).send("Imagen no encontrada");
+    }
+    res.set("Content-Type", photo.mimetype);
+    res.send(photo.contenido);
+  } catch (error) {
+    console.error("Error al servir la imagen:", error);
+    res.status(500).send("Error al obtener la imagen");
+  }
+});
+
+// 5) GET /api/photos/pet/:id
+// Obtener las fotos de un pet por su ID (sin el contenido binario)
 router.get("/pet/:id", async (req, res) => {
   try {
-    const photos = await Photos.findAll({where: { id_pet: req.params.id}});
-    console.log("FOTOS back:", photos)
+    const photos = await Photos.findAll({
+      where: { id_pet: req.params.id },
+      attributes: { exclude: ['contenido'] }
+    });
     if (!photos || photos.length === 0) {
       return res.status(404).json({ error: "Fotos no encontradas." });
     }
@@ -126,15 +123,6 @@ router.delete("/:id", async (req, res) => {
     const photo = await Photos.findByPk(req.params.id);
     if (!photo) {
       return res.status(404).json({ error: "Foto no encontrada." });
-    }
-    const filePath = path.join(process.cwd(), photo.contenido);
-    try {
-      fs.unlinkSync(filePath);
-      console.log("Archivo eliminado del sistema de archivos:", filePath);
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        console.error("Error al eliminar el archivo del sistema de archivos:", err);
-      }
     }
     await photo.destroy();
     res.json({ message: "Foto eliminada correctamente." });

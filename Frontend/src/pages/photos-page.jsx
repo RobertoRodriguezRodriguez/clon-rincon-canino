@@ -104,12 +104,11 @@ export default function PhotosPage() {
               </div>
             ) : (
               photos.map((photo) => {
-                const rutaImagen = photo.contenido.replace(/\\/g, "/");
                 return (
                   <div key={photo.id} className="group relative w-full md:w-[400px] aspect-[4/3] rounded-[2.5rem] overflow-hidden bg-[#161616] border border-white/5 shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:border-white/10">
                     <img
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-                      src={`${BASE_URL}/${rutaImagen}`}
+                      src={`${BASE_URL}/api/photos/${photo.id}/image`}
                       alt="Mascota"
                     />
 

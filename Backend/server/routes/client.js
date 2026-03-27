@@ -177,7 +177,7 @@ router.put("/", async (req, res) => {
 });
 
 // Actualizar usuario
-router.put("/update", async (req, res) => {
+router.put("/update", verificarToken, async (req, res) => {
   try {
     const { id, telefono, email } = req.body;
     const [updatedCount] = await Client.update(

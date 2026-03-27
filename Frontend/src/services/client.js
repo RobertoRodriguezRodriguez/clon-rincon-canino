@@ -203,27 +203,26 @@ export const activeClient = async (id) => {
 
 export const updateClient = async (data) => {
   try {
+    const token = sessionStorage.getItem("token");
     const response = await fetch(`${url}/client/update`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: token ?? "",
       },
       body: JSON.stringify(data),
     });
 
+    const responseJSON = await response.json();
+
     if (!response.ok) {
-      throw new Error("401");
-    }
-
-    let responseJSON = await response.json();
-
-    if (responseJSON.error) {
-      throw new Error(responseJSON.error);
+      throw new Error(responseJSON.error || `Error ${response.status}: ${response.statusText}`);
     }
 
     return responseJSON;
   } catch (error) {
-    console.log(error);
+    console.error("Error in updateClient:", error);
+    throw error;
   }
 };
 
